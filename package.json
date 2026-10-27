@@ -11,12 +11,16 @@
     "check:keys": "tsx scripts/check-keys.ts",
     "index": "tsx scripts/build-embeddings.ts",
     "ask": "tsx scripts/ask.ts",
-    "eval": "tsx scripts/eval.ts"
+    "eval": "tsx scripts/eval.ts",
+    "compare": "tsx scripts/compare.ts",
+    "screenshot": "tsx scripts/screenshot.ts"
   },
   "dependencies": {
+    "marked": "^18.1.2",
     "next": "16.4.3",
     "react": "19.3.0",
-    "react-dom": "19.3.0"
+    "react-dom": "19.3.0",
+    "server-only": "^0.0.1"
   },
   "devDependencies": {
     "@tailwindcss/turbopack": "^4",
@@ -25,6 +29,7 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.4.3",
+    "puppeteer-core": "^25.16.0",
     "tailwindcss": "^4",
     "tsx": "^4.23.15",
     "typescript": "^5"

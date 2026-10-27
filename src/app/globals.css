@@ -1,26 +1,110 @@
 @import "tailwindcss";
 
+/*
+ * Trustdesk — sober B2B look: warm neutrals, one navy accent, no gradients.
+ * Status colors carry meaning (answered / partial / not found / needs review), never decoration.
+ */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --bg: #f6f6f3;
+  --surface: #ffffff;
+  --surface-muted: #fafaf8;
+  --border: #e3e2dd;
+  --border-strong: #cfcdc6;
+  --text: #1b1b19;
+  --muted: #66655f;
+  --accent: #123c69;
+  --accent-hover: #0d2e52;
+  --accent-soft: #e8eef5;
+
+  --ok: #1d6b45;
+  --ok-soft: #e7f3ec;
+  --warn: #8a5a00;
+  --warn-soft: #fbf1dc;
+  --none: #55534d;
+  --none-soft: #eeede9;
+  --bad: #a3271b;
+  --bad-soft: #fbe9e6;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-muted: var(--surface-muted);
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-text: var(--text);
+  --color-muted: var(--muted);
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-soft: var(--accent-soft);
+  --color-ok: var(--ok);
+  --color-ok-soft: var(--ok-soft);
+  --color-warn: var(--warn);
+  --color-warn-soft: var(--warn-soft);
+  --color-none: var(--none);
+  --color-none-soft: var(--none-soft);
+  --color-bad: var(--bad);
+  --color-bad-soft: var(--bad-soft);
+  --font-sans: var(--font-plex-sans);
+  --font-mono: var(--font-plex-mono);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-plex-sans), system-ui, sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* Rendered knowledge-base documents */
+.doc-body h2 {
+  font-size: 1.05rem;
+  font-weight: 600;
+  margin: 2rem 0 0.6rem;
+  padding-top: 0.25rem;
+  scroll-margin-top: 5rem;
+}
+.doc-body h2:target {
+  background: var(--warn-soft);
+  box-shadow: 0 0 0 6px var(--warn-soft);
+  border-radius: 2px;
+}
+.doc-body p,
+.doc-body ul,
+.doc-body table,
+.doc-body blockquote {
+  margin: 0.6rem 0;
+}
+.doc-body ul {
+  list-style: disc;
+  padding-left: 1.25rem;
+}
+.doc-body li {
+  margin: 0.2rem 0;
+}
+.doc-body table {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 13px;
+}
+.doc-body th,
+.doc-body td {
+  border: 1px solid var(--border);
+  padding: 6px 10px;
+  text-align: left;
+  vertical-align: top;
+}
+.doc-body th {
+  background: var(--surface-muted);
+  font-weight: 600;
+}
+.doc-body blockquote {
+  border-left: 3px solid var(--border-strong);
+  padding-left: 0.8rem;
+  color: var(--muted);
+}
+.doc-body code {
+  font-family: var(--font-plex-mono), monospace;
+  font-size: 12px;
 }

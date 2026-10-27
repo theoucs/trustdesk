@@ -43,3 +43,4 @@ next-env.d.ts
 
 # caches locaux (réponses LLM)
 /.cache/
+/screenshots/

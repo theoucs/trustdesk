@@ -1,5 +1,5 @@
 import { postJson } from "./http";
-import type { ChatClient, ChatRequest, ChatResponse, EmbedTask, EmbeddingClient } from "./types";
+import type { ChatClient, ChatRequest, ChatResponse, EmbeddingClient } from "./types";
 
 const BASE = "https://api.mistral.ai/v1";
 // Offre gratuite « Experiment » : débit limité ; 1,1 s entre deux appels reste sous la limite.
@@ -57,8 +57,8 @@ export function mistralEmbeddings(model = "mistral-embed"): EmbeddingClient {
   return {
     provider: "mistral",
     model,
-    // mistral-embed ne distingue pas documents et requêtes : `task` est ignoré.
-    async embed(texts: string[], _task: EmbedTask): Promise<number[][]> {
+    // mistral-embed ne distingue pas documents et requêtes : la tâche n'est pas transmise.
+    async embed(texts: string[]): Promise<number[][]> {
       const res = await postJson<{ data: { embedding: number[] }[] }>(
         `${BASE}/embeddings`,
         { model, input: texts },

@@ -1,7 +1,6 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
   cacheComponents: true,
   partialPrefetching: true,
   turbopack: {
@@ -11,6 +10,12 @@ const nextConfig: NextConfig = {
         as: "*.css",
       },
     },
+  },
+  // Fichiers lus avec fs à l'exécution : à embarquer explicitement dans les fonctions serverless.
+  outputFileTracingIncludes: {
+    "/api/answer": ["./knowledge-base/**/*", "./data/embeddings/**/*"],
+    "/evaluation/*": ["./runs/**/*"],
+    "/knowledge/*": ["./knowledge-base/**/*"],
   },
 };
 
