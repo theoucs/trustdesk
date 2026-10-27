@@ -412,9 +412,9 @@ Choix techniques :
 2. **trustdesk.tblabs.dev → « Load sample questionnaire » → « Draft answers »** (1 min) : pendant que ça se remplit, montrer une réponse sourcée (déplier la source → lien vers la section surlignée), FedRAMP → « Not in documentation » + sections consultées, la suppression des données → « Conflicting sources ».
 3. **Question piège en direct** : taper une question inventée par l'interlocuteur. Si elle n'est pas dans la doc, l'outil le dit. C'est le moment le plus convaincant.
 4. **Onglet Quality** (1 min) : le tableau des versions de prompt → « v3 avait le meilleur score, j'ai déployé v2 parce que c'est la seule qui n'invente rien ». Puis la matrice : « le juge pèse 8 points, le modèle 1 point ».
-5. Conclure sur ce qu'il faudrait pour la production (§10).
+5. Conclure sur ce qu'il faudrait pour passer en production (réponse prête au §11).
 
-**Précautions** : faire la démo avec **Mistral** (latence ~1 s, stable) ; Gemini gratuit varie de 1 à 10 s. Ne pas lancer d'évaluation complète le jour d'un entretien : elle consomme le quota quotidien Gemini (500 requêtes/jour), dont l'app a besoin pour les embeddings des questions… (quota séparé pour les embeddings, mais autant ne pas tenter le sort).
+**Précautions** : faire la démo avec **Mistral** (latence ~1 s, stable) ; Gemini gratuit varie de 1 à 10 s. Ne pas lancer d'évaluation complète le jour d'un entretien : elle consomme presque tout le quota quotidien gratuit de Gemini (500 requêtes/jour par modèle).
 
 ## 10. Déploiement
 
