@@ -9,7 +9,8 @@
 - [x] Étape 3 — Découpage + recherche (BM25, embeddings, fusion RRF) — mesurée
 - [x] Étape 4 — Clients Mistral / Gemini + génération de réponses sourcées
 - [x] Étape 5 — LLM-as-judge, score global, matrice 2×2, itération de prompt
-- [~] Étape 6 — App web Trustdesk (fonctionne en local) ; déploiement `trustdesk.tblabs.dev` + vitrine tblabs.dev à faire
+- [x] Étape 6 — App web Trustdesk (testée en local) + vitrine tblabs.dev/work/trustdesk (commitée)
+- [ ] Déploiement : repo GitHub, Vercel, DNS (voir §10)
 
 **Commandes utiles**
 
@@ -405,7 +406,29 @@ Choix techniques :
 
 ---
 
-## 9. Questions probables en entretien (enrichi au fil du projet)
+## 9. Démo live en entretien (3 minutes)
+
+1. **tblabs.dev/work/trustdesk** (30 s) : le problème en une phrase (« une fausse réponse dans un questionnaire de sécurité finit dans un contrat »), les 4 statuts.
+2. **trustdesk.tblabs.dev → « Load sample questionnaire » → « Draft answers »** (1 min) : pendant que ça se remplit, montrer une réponse sourcée (déplier la source → lien vers la section surlignée), FedRAMP → « Not in documentation » + sections consultées, la suppression des données → « Conflicting sources ».
+3. **Question piège en direct** : taper une question inventée par l'interlocuteur. Si elle n'est pas dans la doc, l'outil le dit. C'est le moment le plus convaincant.
+4. **Onglet Quality** (1 min) : le tableau des versions de prompt → « v3 avait le meilleur score, j'ai déployé v2 parce que c'est la seule qui n'invente rien ». Puis la matrice : « le juge pèse 8 points, le modèle 1 point ».
+5. Conclure sur ce qu'il faudrait pour la production (§10).
+
+**Précautions** : faire la démo avec **Mistral** (latence ~1 s, stable) ; Gemini gratuit varie de 1 à 10 s. Ne pas lancer d'évaluation complète le jour d'un entretien : elle consomme le quota quotidien Gemini (500 requêtes/jour), dont l'app a besoin pour les embeddings des questions… (quota séparé pour les embeddings, mais autant ne pas tenter le sort).
+
+## 10. Déploiement
+
+| Élément | Où | Statut |
+|---|---|---|
+| Code | GitHub `theoucs/trustdesk` (privé) | à créer |
+| App | Vercel, projet `trustdesk`, framework Next.js | à créer (lié au repo : chaque push sur `main` redéploie) |
+| Clés API | Vercel → Settings → Environment Variables : `MISTRAL_API_KEY`, `GEMINI_API_KEY` (type *Sensitive*, Production + Preview) | à saisir à la main, jamais dans le code ni dans le chat |
+| Domaine | Vercel → Domains : `trustdesk.tblabs.dev` ; Cloudflare → DNS : `CNAME trustdesk → valeur donnée par Vercel`, **DNS only** (nuage gris, comme metarenastats) | à faire |
+| Vitrine | `tblabs/work/trustdesk/` | commitée, à pousser une fois l'app en ligne |
+
+Protection du quota : 30 questions / 10 min par IP, 500 / jour (`DAILY_ANSWER_LIMIT`), 20 questions max par questionnaire.
+
+## 11. Questions probables en entretien (enrichi au fil du projet)
 
 **« Pourquoi ne pas juste mettre toute la doc dans le prompt ? Les contextes font 128k tokens maintenant. »**
 Ici ça tiendrait (~5k tokens). Mais : (1) coût et latence multipliés à chaque question, (2) en vraie entreprise la base documentaire fait des milliers de pages, (3) les modèles exploitent moins bien l'information au milieu d'un long contexte (« lost in the middle »), (4) la recherche donne une **liste explicite d'extraits candidats**, ce qui rend les citations vérifiables. Bonne réponse nuancée : *pour un petit corpus stable, le long contexte est une option légitime ; c'est un compromis à mesurer, et ce projet permet justement de le mesurer.*
