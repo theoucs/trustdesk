@@ -31,7 +31,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-8 sm:px-6">{children}</main>
         <footer className="border-t border-border">
           <div className="mx-auto max-w-6xl px-4 py-5 text-xs text-muted sm:px-6">
-            Demo workspace. Vantrel is a fictional company; all documentation is invented. Built by{" "}
+            Demo workspace. Vantrel is a fictional company and its documentation is made up. Built by{" "}
             <a className="underline hover:text-text" href="https://tblabs.dev">
               Théo Bodart
             </a>

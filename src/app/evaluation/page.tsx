@@ -65,9 +65,9 @@ export default function EvaluationPage() {
       <div className="max-w-3xl">
         <h1 className="text-xl font-semibold tracking-tight">Answer quality</h1>
         <p className="mt-1 text-muted">
-          Every configuration is tested against a fixed set of 50 questionnaire questions with expert reference answers
-          — including questions the documentation does not answer, misleading near-matches and one contradiction between
-          two documents. A second model grades each answer for correctness, faithfulness to sources and completeness.
+          Each change is tested on the same 50 questions, each with a reference answer. 12 of them are not answered by
+          the documentation, and on one of them two documents contradict each other. A model grades every answer, and code
+          counts invented answers and missing sources.
         </p>
       </div>
 
@@ -91,27 +91,27 @@ export default function EvaluationPage() {
                 <div className="grid grid-cols-2 gap-3">
                   <Metric
                     label="Overall score"
-                    value={graded ? graded.summary.globalScore.toFixed(1) : "—"}
+                    value={graded ? graded.summary.globalScore.toFixed(1) : "Pending"}
                     hint={
                       graded
-                        ? `/100 · graded by ${NAMES[REFERENCE_GRADER]}`
-                        : `grading by ${NAMES[REFERENCE_GRADER]} pending`
+                        ? `out of 100, graded by ${NAMES[REFERENCE_GRADER]}`
+                        : `not graded by ${NAMES[REFERENCE_GRADER]} yet`
                     }
                   />
                   <Metric
                     label="Invented answers"
                     value={pct(r.summary.hallucinationRate)}
-                    hint="on questions the docs don't answer"
+                    hint="on the 12 undocumented questions"
                   />
                   <Metric
                     label="Missed answers"
                     value={pct(r.summary.falseAbstentionRate)}
-                    hint="said “not documented” wrongly"
+                    hint="marked “not documented” by mistake"
                   />
                   <Metric
                     label="Expected sources cited"
                     value={pct(r.summary.citationRecall)}
-                    hint={`${r.summary.unsourcedBlocked} unsourced answer(s) blocked`}
+                    hint={`${r.summary.unsourcedBlocked} blocked for lack of a source`}
                   />
                 </div>
               </div>
@@ -124,11 +124,9 @@ export default function EvaluationPage() {
         <section className="space-y-3">
           <h2 className="font-semibold">Grader calibration</h2>
           <p className="max-w-3xl text-[13px] text-muted">
-            A grader is a measuring instrument, so it was checked against a person. {calibration.labelled} answers —
-            picked first where the two graders disagreed, so the hard cases — were labelled by hand with one question:
-            could this answer go to the customer as is? Gemini agrees with the person almost every time; Ministral 14B
-            rejects correct answers, including correct &ldquo;not documented&rdquo; ones. Gemini is therefore the
-            reference grader for the scores above.
+            {calibration.labelled} answers were also graded by hand, mostly ones where the two graders disagreed. The
+            question was simple: could this answer go to the customer as is? The scores above use the grader that agrees
+            most with the person.
           </p>
           <div className="overflow-x-auto rounded-md border border-border bg-surface">
             <table className="w-full text-left text-[13px]">
@@ -170,21 +168,33 @@ export default function EvaluationPage() {
         <section className="space-y-3">
           <h2 className="font-semibold">Prompt versions</h2>
           <p className="max-w-3xl text-[13px] text-muted">
-            Each version fixes the errors found by reading the weakest answers of the previous one. v2 is in use: it is
-            the only version where neither model asserted anything the documentation does not say. v3 scores higher with
-            the grader but brings back one invented answer — and an invented answer is the costly mistake in a security
-            questionnaire.
+            Each version fixes errors found in the weakest answers of the previous one. v2 is in use because it is the
+            only one where neither model invented an answer. v3 scores higher but invents one again.
           </p>
           <div className="overflow-x-auto rounded-md border border-border bg-surface">
             <table className="w-full text-left text-[13px]">
               <thead className="border-b border-border bg-surface-muted text-muted">
                 <tr>
-                  <th className="px-3 py-2 font-medium">Prompt</th>
+                  <th rowSpan={2} className="px-3 py-2 align-bottom font-medium">
+                    Prompt
+                  </th>
                   {PROVIDERS.map((g) => (
-                    <th key={g} colSpan={3} className="px-3 py-2 font-medium">
-                      {NAMES[g]} — score (graded by {NAMES[g === "mistral" ? "gemini" : "mistral"]}) · invented · missed
+                    <th key={g} colSpan={3} className="px-3 pt-2 font-medium text-text">
+                      {NAMES[g]}{" "}
+                      <span className="font-normal text-muted">
+                        (graded by {NAMES[g === "mistral" ? "gemini" : "mistral"]})
+                      </span>
                     </th>
                   ))}
+                </tr>
+                <tr>
+                  {PROVIDERS.flatMap((g) =>
+                    ["Score", "Invented", "Missed"].map((h) => (
+                      <th key={g + h} className="px-3 pb-2 font-normal">
+                        {h}
+                      </th>
+                    )),
+                  )}
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
@@ -213,7 +223,7 @@ export default function EvaluationPage() {
                         ]
                       ) : (
                         <td key={g} colSpan={3} className="px-3 py-2 text-muted">
-                          —
+                          Not run
                         </td>
                       );
                     })}
@@ -229,9 +239,8 @@ export default function EvaluationPage() {
         <section key={prompt} className="space-y-3">
           <h2 className="font-semibold">Model × grader matrix · prompt {prompt}</h2>
           <p className="max-w-3xl text-[13px] text-muted">
-            Each model drafts all answers once; each answer set is then graded by both models. Compare scores within a
-            column: graders differ in strictness, so a score is only comparable with another score from the same grader.
-            A grader that rates its own model higher than the other grader does shows self-preference.
+            Both answer sets are graded by both models. Only compare scores in the same column, since graders are not
+            equally strict. Neither grader favoured its own model.
           </p>
           <div className="overflow-x-auto">
             <table className="min-w-[420px] border-collapse text-[13px]">
@@ -264,7 +273,7 @@ export default function EvaluationPage() {
                               {r.summary.globalScore.toFixed(1)}
                             </Link>
                           ) : (
-                            <span className="text-muted">—</span>
+                            <span className="text-muted">Not run</span>
                           )}
                           {g === j && <span className="ml-2 text-xs text-muted">self-graded</span>}
                         </td>

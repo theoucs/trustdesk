@@ -5,6 +5,7 @@ import { Suspense } from "react";
 import { StatusBadge } from "@/components/status-badge";
 import { chunkLabel } from "@/lib/anchors";
 import { getRunResults, listRuns } from "@/lib/data/runs";
+import { plainProse } from "@/lib/rag/answer";
 
 export function generateStaticParams() {
   return listRuns().map((r) => ({ run: r.id }));
@@ -116,7 +117,7 @@ async function RunContent({ params }: { params: PageProps<"/evaluation/[run]">["
               <div className="grid gap-4 border-t border-border bg-surface-muted px-4 py-4 md:grid-cols-2">
                 <div className="space-y-2">
                   <p className="text-xs font-medium uppercase tracking-wide text-muted">Drafted answer</p>
-                  <p className="whitespace-pre-line">{r.answer.answer || "—"}</p>
+                  <p className="whitespace-pre-line">{r.answer.answer || "(no answer)"}</p>
                   {r.answer.citations.length > 0 && (
                     <ul className="text-xs text-muted">
                       {r.answer.citations.map((ci) => (
@@ -139,7 +140,7 @@ async function RunContent({ params }: { params: PageProps<"/evaluation/[run]">["
                     Grader · correctness {r.judge.correctness} · faithfulness {r.judge.faithfulness} · completeness{" "}
                     {r.judge.completeness}
                   </p>
-                  <p className="text-muted">{r.judge.reasoning}</p>
+                  <p className="text-muted">{plainProse(r.judge.reasoning)}</p>
                 </div>
               </div>
             </details>

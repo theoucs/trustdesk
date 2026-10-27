@@ -164,7 +164,7 @@ export async function answerQuestion(
       answer: "",
       citations: [],
       conflict: false,
-      warnings: [`Sortie non JSON : ${res.text.slice(0, 200)}`],
+      warnings: [`The model did not return a usable answer: ${res.text.slice(0, 200)}`],
     };
   }
 
@@ -178,6 +178,17 @@ export async function answerQuestion(
  *   l'outil n'affiche jamais une affirmation non sourcée comme si elle était fiable.
  * - Une réponse « not_found » avec citations : on retire les citations (rien n'a été trouvé, rien à citer).
  */
+/**
+ * Les réponses partent chez des clients : pas de tirets cadratins (marque typique d'un texte généré), remplacés par
+ * la ponctuation qu'aurait utilisée une personne.
+ */
+export function plainProse(text: string): string {
+  return text
+    .replace(/\s+[—–]\s+/g, ", ")
+    .replace(/[—–]/g, "-")
+    .trim();
+}
+
 export function validate(
   parsed: { status: AnswerStatus; answer: string; citations: string[]; conflict: boolean },
   chunks: Chunk[],
@@ -188,7 +199,7 @@ export function validate(
     const m = String(label).match(/^\[?S(\d+)\]?$/i);
     const chunk = m ? chunks[Number(m[1]) - 1] : undefined;
     if (!chunk) {
-      warnings.push(`Citation invalide retirée : « ${label} »`);
+      warnings.push(`Removed a source that was not provided: ${label}`);
       continue;
     }
     citations.push({
@@ -202,15 +213,15 @@ export function validate(
 
   let status = parsed.status;
   if (status === "not_found" && citations.length) {
-    warnings.push("Réponse not_found accompagnée de citations : citations ignorées");
+    warnings.push("Sources ignored on a “not documented” answer");
     citations.length = 0;
   }
   if ((status === "answered" || status === "partial") && citations.length === 0) {
-    warnings.push("Réponse sans source valide : bloquée pour relecture");
+    warnings.push("No valid source, held for review");
     status = "needs_review";
   }
   // Les étiquettes « (S1) » n'ont pas de sens pour le lecteur : retirées par le code, quoi que dise le prompt.
   // Seulement entre parenthèses/crochets, pour ne pas toucher « Amazon S3 ».
-  const answer = (parsed.answer ?? "").replace(/\s*[([]S\d+(?:\s*[,;]\s*S\d+)*[)\]]/g, "").trim();
+  const answer = plainProse((parsed.answer ?? "").replace(/\s*[([]S\d+(?:\s*[,;]\s*S\d+)*[)\]]/g, ""));
   return { status, answer, citations, conflict: Boolean(parsed.conflict), warnings };
 }

@@ -29,8 +29,8 @@ const plainText = (md: string) =>
     .replace(/\|/g, "  ");
 
 const MODELS = [
-  { value: "mistral", label: "Mistral — Ministral 14B" },
-  { value: "gemini", label: "Google — Gemini 3.5 Flash-Lite" },
+  { value: "mistral", label: "Mistral · Ministral 14B" },
+  { value: "gemini", label: "Google · Gemini 3.5 Flash-Lite" },
 ] as const;
 
 type Row = {
@@ -96,7 +96,7 @@ export function Questionnaire() {
       setRows([]);
       setNotice({
         kind: "ok",
-        text: `Imported ${found.length} questions from ${file.name} (${detail}). Review them below, then draft.`,
+        text: `${found.length} questions imported from ${file.name} (${detail}). You can edit them before drafting.`,
       });
     } catch (e) {
       setNotice({
@@ -179,7 +179,7 @@ export function Questionnaire() {
         >
           {dragging && (
             <div className="pointer-events-none absolute inset-2 grid place-items-center rounded border-2 border-dashed border-accent text-[13px] font-medium text-accent">
-              Drop your questionnaire (.xlsx, .csv or .txt)
+              Drop the file to import its questions
             </div>
           )}
           <textarea
@@ -192,11 +192,11 @@ export function Questionnaire() {
           />
         </div>
         <p className="border-t border-border px-4 py-2 text-xs text-muted">
-          Paste questions, drop an Excel/CSV questionnaire on this box, or{" "}
+          You can drop an .xlsx or .csv file on this box. No file at hand?{" "}
           <a href="/samples/vantrel-security-questionnaire.xlsx" download className="text-accent hover:underline">
-            download a sample questionnaire (.xlsx)
-          </a>{" "}
-          to try the import.
+            Download a sample questionnaire
+          </a>
+          .
         </p>
         <div className="flex flex-wrap items-center gap-3 border-t border-border px-4 py-3">
           <label className="flex items-center gap-2 text-[13px] text-muted">
@@ -216,7 +216,7 @@ export function Questionnaire() {
           </label>
           <span className="text-xs text-muted">
             {questions.length} question{questions.length === 1 ? "" : "s"}
-            {questions.length > MAX_QUESTIONS && ` — only the first ${MAX_QUESTIONS} will be processed in this demo`}
+            {questions.length > MAX_QUESTIONS && ` (the demo drafts the first ${MAX_QUESTIONS})`}
           </span>
           <div className="ml-auto flex gap-2">
             {running && (

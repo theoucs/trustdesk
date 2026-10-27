@@ -11,8 +11,7 @@ export default function KnowledgePage() {
       <div className="max-w-3xl">
         <h1 className="text-xl font-semibold tracking-tight">Knowledge base</h1>
         <p className="mt-1 text-muted">
-          The approved documents answers are drafted from. Each section is a citable source. Nothing outside these
-          documents is used.
+          Answers are drafted from these documents only. Every section can be cited as a source.
         </p>
       </div>
       <div className="overflow-x-auto rounded-md border border-border bg-surface">

@@ -84,11 +84,11 @@ export async function importQuestionnaire(file: File): Promise<ImportResult> {
     const sheet = await readSheet(file);
     const rows = sheet.map((r) => r.map((c) => (c == null ? "" : String(c))));
     const { questions, column } = questionsFromRows(rows);
-    return { questions, detail: column ? `column “${column}”` : "detected question column" };
+    return { questions, detail: column ? `column “${column}”` : "question column detected" };
   }
   if (name.endsWith(".csv")) {
     const { questions, column } = questionsFromRows(parseCsv(await file.text()));
-    return { questions, detail: column ? `column “${column}”` : "detected question column" };
+    return { questions, detail: column ? `column “${column}”` : "question column detected" };
   }
   if (name.endsWith(".txt")) {
     const questions = (await file.text())
