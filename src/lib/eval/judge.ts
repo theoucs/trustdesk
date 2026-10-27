@@ -81,8 +81,16 @@ Assistant answer: ${a.answer || "(empty)"}
 Excerpts cited by the assistant:
 ${cited}`;
 
-  const res = await judge.chat({ system: SYSTEM, user, temperature: 0, schema: SCHEMA, maxTokens: 500 });
-  const s = JSON.parse(res.text) as JudgeScores;
+  // Un juge bavard peut dépasser la limite de tokens : la sortie est alors coupée, et un JSON coupé est invalide
+  // (la sortie structurée garantit la forme, pas la longueur). On réessaie avec plus de place.
+  let res = await judge.chat({ system: SYSTEM, user, temperature: 0, schema: SCHEMA, maxTokens: 800 });
+  let s: JudgeScores;
+  try {
+    s = JSON.parse(res.text) as JudgeScores;
+  } catch {
+    res = await judge.chat({ system: SYSTEM, user, temperature: 0, schema: SCHEMA, maxTokens: 2000 });
+    s = JSON.parse(res.text) as JudgeScores;
+  }
   const clamp = (n: number) => Math.min(5, Math.max(1, Math.round(Number(n)) || 1));
   return {
     reasoning: s.reasoning,
