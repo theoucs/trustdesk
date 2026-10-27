@@ -1,5 +1,7 @@
 # Comment ça marche — RFP Assistant
 
+> **Version courte et visuelle : `docs/guide.html`** (à ouvrir dans un navigateur). Ce document-ci est la référence technique détaillée.
+
 > Document vivant, mis à jour à chaque étape du projet. Objectif : pouvoir expliquer le projet en 2 minutes, puis tenir un deep dive technique de 45 minutes.
 
 **État d'avancement**

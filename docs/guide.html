@@ -1,0 +1,426 @@
+<title>Guide Trustdesk</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
+<style>
+  /* Layout: one reading column (~760px) with wider bands for diagrams; same palette as the Trustdesk app (navy + warm neutrals) */
+  :root {
+    --bg: #f6f6f3;
+    --surface: #ffffff;
+    --muted-surface: #efeee9;
+    --line: #e1e0da;
+    --fg: #1b1b19;
+    --muted: #66655f;
+    --accent: #123c69;
+    --accent-soft: #e6edf5;
+    --ok: #1d6b45;
+    --ok-soft: #e4f2ea;
+    --warn: #8a5a00;
+    --warn-soft: #fbf0d9;
+    --none: #55534d;
+    --none-soft: #ecebe6;
+    --bad: #a3271b;
+    --bad-soft: #fbe7e4;
+    --sans: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+    --mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #131416; --surface: #1b1d20; --muted-surface: #22252a; --line: #2e3238; --fg: #ecebe7; --muted: #a3a29c;
+      --accent: #8fb4e0; --accent-soft: #1d2a3a; --ok: #6fd3a0; --ok-soft: #173327; --warn: #e9b65c; --warn-soft: #362a12;
+      --none: #b9b7b0; --none-soft: #2a2b2e; --bad: #f08a7d; --bad-soft: #3a1c19; color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #131416; --surface: #1b1d20; --muted-surface: #22252a; --line: #2e3238; --fg: #ecebe7; --muted: #a3a29c;
+    --accent: #8fb4e0; --accent-soft: #1d2a3a; --ok: #6fd3a0; --ok-soft: #173327; --warn: #e9b65c; --warn-soft: #362a12;
+    --none: #b9b7b0; --none-soft: #2a2b2e; --bad: #f08a7d; --bad-soft: #3a1c19; color-scheme: dark;
+  }
+
+  * { box-sizing: border-box; }
+  body { background: var(--bg); color: var(--fg); font-family: var(--sans); font-size: 16px; line-height: 1.55; }
+  .page { max-width: 880px; margin: 0 auto; padding-inline: 20px; padding-block: 40px 80px; }
+  h1, h2, h3 { text-wrap: balance; line-height: 1.2; margin: 0; }
+  h1 { font-size: clamp(2rem, 5vw, 2.6rem); font-weight: 700; letter-spacing: -0.02em; }
+  h2 { font-size: 1.45rem; font-weight: 700; letter-spacing: -0.01em; }
+  h3 { font-size: 1rem; font-weight: 600; }
+  p { margin: 0; }
+  a { color: var(--accent); }
+  .lead { color: var(--muted); font-size: 1.05rem; max-width: 62ch; }
+  .label { font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+  section { display: grid; gap: 18px; padding-block: 44px; border-top: 1px solid var(--line); scroll-margin-top: 70px; }
+  section:first-of-type { border-top: none; }
+
+  /* Header + section nav */
+  header { display: grid; gap: 14px; padding-bottom: 8px; }
+  .brand { display: flex; align-items: center; gap: 10px; font-weight: 600; }
+  .brand span { display: grid; place-items: center; width: 28px; height: 28px; border-radius: 6px; background: var(--accent); color: var(--bg); font-size: 13px; }
+  nav.toc { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg); padding-block: 10px; border-bottom: 1px solid var(--line); display: flex; gap: 6px; overflow-x: auto; }
+  nav.toc a { white-space: nowrap; font-size: 0.85rem; text-decoration: none; color: var(--muted); padding: 5px 10px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); }
+  nav.toc a:hover, nav.toc a:focus-visible { color: var(--fg); border-color: var(--accent); outline: none; }
+
+  /* Pitch */
+  .pitch { background: var(--accent); color: var(--bg); border-radius: 10px; padding: 24px 26px; display: grid; gap: 12px; }
+  .pitch .label { color: var(--bg); opacity: 0.75; }
+  .pitch p { font-size: 1.15rem; line-height: 1.5; max-width: 60ch; }
+  .three { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+  .tile { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 16px; display: grid; gap: 6px; align-content: start; }
+  .tile strong { font-size: 1.6rem; line-height: 1; font-variant-numeric: tabular-nums; }
+  .tile p { color: var(--muted); font-size: 0.92rem; }
+
+  /* Journey diagram */
+  .tabs { display: flex; gap: 8px; flex-wrap: wrap; }
+  .tabs button { font: inherit; font-size: 0.9rem; padding: 7px 12px; border-radius: 6px; border: 1px solid var(--line); background: var(--surface); color: var(--fg); cursor: pointer; }
+  .tabs button[aria-selected="true"] { border-color: var(--accent); background: var(--accent-soft); color: var(--accent); font-weight: 600; }
+  .tabs button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .journey { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 0; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; background: var(--surface); }
+  .stage { padding: 16px 14px; display: grid; gap: 8px; align-content: start; border-left: 1px solid var(--line); position: relative; min-width: 0; }
+  .stage:first-child { border-left: none; }
+  .stage .who { font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--accent); }
+  .stage h3 { font-size: 0.95rem; }
+  .stage .out { font-size: 0.85rem; color: var(--muted); }
+  .stage code, .mono { font-family: var(--mono); font-size: 0.78rem; }
+  .chip { display: inline-block; padding: 2px 7px; border-radius: 4px; font-size: 0.75rem; font-weight: 600; }
+  .c-ok { background: var(--ok-soft); color: var(--ok); }
+  .c-warn { background: var(--warn-soft); color: var(--warn); }
+  .c-none { background: var(--none-soft); color: var(--none); }
+  .c-bad { background: var(--bad-soft); color: var(--bad); }
+  .sources { display: grid; gap: 4px; margin: 0; padding: 0; list-style: none; font-size: 0.78rem; }
+  .sources li { background: var(--muted-surface); border-radius: 4px; padding: 3px 6px; overflow-wrap: anywhere; }
+  .final { background: var(--muted-surface); }
+  .note { font-size: 0.9rem; color: var(--muted); max-width: 66ch; }
+
+  /* Glossary */
+  .gloss { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+  .term { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 14px 16px; display: grid; gap: 6px; }
+  .term h3 { display: flex; justify-content: space-between; gap: 8px; align-items: baseline; }
+  .term h3 small { font-family: var(--mono); font-weight: 400; font-size: 0.72rem; color: var(--muted); }
+  .term p { font-size: 0.93rem; }
+  .term .here { color: var(--muted); font-size: 0.86rem; }
+
+  /* Bars */
+  .card { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 20px; display: grid; gap: 14px; }
+  .stack { display: flex; height: 34px; border-radius: 6px; overflow: hidden; }
+  .stack div { display: grid; place-items: center; font-size: 0.75rem; font-weight: 600; color: var(--bg); min-width: 0; overflow: hidden; white-space: nowrap; }
+  .legend { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 0.85rem; color: var(--muted); }
+  .legend span::before { content: ""; display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 6px; background: var(--c); vertical-align: -1px; }
+  .twocol { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+  .row { display: grid; grid-template-columns: 150px minmax(0, 1fr) 70px; gap: 12px; align-items: center; font-size: 0.92rem; }
+  .track { height: 12px; background: var(--muted-surface); border-radius: 6px; overflow: hidden; }
+  .track i { display: block; height: 100%; border-radius: 6px; }
+  .num { font-variant-numeric: tabular-nums; text-align: right; font-weight: 600; }
+
+  /* Decisions */
+  .decisions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+  .decision { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 18px; display: grid; gap: 8px; align-content: start; }
+  .decision .big { font-size: 1.9rem; font-weight: 700; color: var(--accent); line-height: 1.05; font-variant-numeric: tabular-nums; }
+  .decision p { font-size: 0.93rem; color: var(--muted); }
+  .say { border-left: 3px solid var(--accent); padding: 4px 0 4px 12px; font-size: 0.95rem; color: var(--fg) !important; }
+
+  /* Demo steps */
+  ol.demo { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; counter-reset: s; }
+  ol.demo li { counter-increment: s; display: grid; grid-template-columns: 34px minmax(0, 1fr) auto; gap: 12px; align-items: start; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 14px; }
+  ol.demo li::before { content: counter(s); display: grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; background: var(--accent-soft); color: var(--accent); font-weight: 700; font-size: 0.9rem; }
+  ol.demo .t { font-family: var(--mono); font-size: 0.78rem; color: var(--muted); white-space: nowrap; }
+  ol.demo p { font-size: 0.92rem; color: var(--muted); margin-top: 3px; }
+
+  /* Flashcards */
+  .progress { display: flex; align-items: center; gap: 12px; font-size: 0.9rem; color: var(--muted); flex-wrap: wrap; }
+  .progress .track { flex: 1; min-width: 140px; }
+  .progress button { font: inherit; font-size: 0.85rem; background: none; border: 1px solid var(--line); border-radius: 6px; padding: 5px 10px; color: var(--muted); cursor: pointer; }
+  .cards { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+  .fc { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px; display: grid; gap: 10px; align-content: start; }
+  .fc.known { border-color: var(--ok); }
+  .fc .q { font-weight: 600; }
+  .fc .a { font-size: 0.93rem; display: grid; gap: 6px; }
+  .fc .actions { display: flex; gap: 8px; flex-wrap: wrap; }
+  .fc button { font: inherit; font-size: 0.85rem; border-radius: 6px; padding: 6px 11px; cursor: pointer; border: 1px solid var(--line); background: var(--surface); color: var(--fg); }
+  .fc button.reveal { background: var(--accent); color: var(--bg); border-color: var(--accent); }
+  .fc button.knowbtn[aria-pressed="true"] { background: var(--ok-soft); color: var(--ok); border-color: var(--ok); }
+  .fc button:focus-visible, .progress button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  footer { border-top: 1px solid var(--line); padding-top: 24px; display: flex; flex-wrap: wrap; gap: 8px 20px; font-size: 0.9rem; }
+
+  @media (max-width: 760px) {
+    .three, .gloss, .twocol, .decisions, .cards { grid-template-columns: minmax(0, 1fr); }
+    .journey { grid-template-columns: minmax(0, 1fr); }
+    .stage { border-left: none; border-top: 1px solid var(--line); }
+    .stage:first-child { border-top: none; }
+    .row { grid-template-columns: 110px minmax(0, 1fr) 56px; }
+    ol.demo li { grid-template-columns: 34px minmax(0, 1fr); }
+    ol.demo .t { grid-column: 2; }
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .fc, .tabs button { transition: border-color 0.15s, background 0.15s; }
+  }
+</style>
+
+<div class="page">
+  <header>
+    <div class="brand"><span>T</span> Trustdesk</div>
+    <h1>Guide Trustdesk</h1>
+    <p class="lead">Tout ce qu'il faut pour présenter le projet en entretien, en 10 minutes de lecture. Le document technique complet reste dans le dépôt, tu n'as pas besoin de le lire.</p>
+  </header>
+
+  <nav class="toc" aria-label="Sections">
+    <a href="#pitch">Le pitch</a>
+    <a href="#chemin">Le chemin d'une question</a>
+    <a href="#mots">8 mots</a>
+    <a href="#mesure">La mesure</a>
+    <a href="#choix">4 choix</a>
+    <a href="#demo">La démo</a>
+    <a href="#questions">Questions d'entretien</a>
+  </nav>
+
+  <!-- 1. Pitch -->
+  <section id="pitch">
+    <p class="label">À dire en 30 secondes</p>
+    <div class="pitch">
+      <p>« Les éditeurs de logiciels reçoivent des questionnaires de sécurité de plusieurs centaines de questions. J'ai construit un outil qui les remplit à partir de la documentation de l'entreprise. Chaque réponse cite sa source, et quand la doc ne dit rien, l'outil le dit au lieu d'inventer. Et surtout, je le mesure : 50 questions test, deux modèles, et un correcteur automatique que j'ai vérifié contre un humain. »</p>
+    </div>
+    <div class="three">
+      <div class="tile"><strong>Le problème</strong><p>Une fausse réponse dans un questionnaire de sécurité peut finir dans un contrat.</p></div>
+      <div class="tile"><strong>La règle</strong><p>Jamais de réponse sans source. Sinon : « pas dans la documentation ».</p></div>
+      <div class="tile"><strong>La preuve</strong><p>0 réponse inventée sur les 12 questions pièges, avec les deux modèles.</p></div>
+    </div>
+  </section>
+
+  <!-- 2. Journey -->
+  <section id="chemin">
+    <p class="label">Comment ça marche</p>
+    <h2>Le chemin d'une question</h2>
+    <p class="note">Choisis un exemple et suis-le de gauche à droite. Ce sont de vraies réponses de l'outil.</p>
+    <div class="tabs" role="tablist" aria-label="Exemple">
+      <button role="tab" id="tab-fedramp" aria-selected="true" data-ex="fedramp">« Êtes-vous FedRAMP ? »</button>
+      <button role="tab" id="tab-scim" aria-selected="false" data-ex="scim">« Supportez-vous SCIM ? »</button>
+      <button role="tab" id="tab-delete" aria-selected="false" data-ex="delete">« Quand nos données sont-elles supprimées ? »</button>
+    </div>
+    <div class="journey" id="journey" role="tabpanel" aria-live="polite"></div>
+    <p class="note">À retenir : <strong>le modèle propose, le code vérifie.</strong> La garantie « toujours une source » ne repose pas sur la bonne volonté de l'IA, mais sur une vérification écrite en code.</p>
+  </section>
+
+  <!-- 3. Glossary -->
+  <section id="mots">
+    <p class="label">Vocabulaire</p>
+    <h2>Les 8 mots à connaître</h2>
+    <div class="gloss">
+      <div class="term"><h3>RAG <small>Retrieval-Augmented Generation</small></h3><p>Chercher d'abord les bons passages, puis demander à l'IA de répondre <em>uniquement</em> à partir d'eux.</p><p class="here">Trustdesk : les 5 sections de doc les plus proches de la question.</p></div>
+      <div class="term"><h3>Embedding <small>vecteur</small></h3><p>Une liste de nombres qui représente le <em>sens</em> d'un texte. Deux textes qui veulent dire la même chose ont des nombres proches, même sans mot commun, même en deux langues.</p><p class="here">C'est ce qui permet à une question en français de trouver une doc en anglais.</p></div>
+      <div class="term"><h3>BM25 <small>recherche par mots-clés</small></h3><p>La recherche classique, comme un moteur de recherche : elle compte les mots en commun, et donne plus de poids aux mots rares.</p><p class="here">Plan B quand les embeddings ne répondent pas.</p></div>
+      <div class="term"><h3>Prompt</h3><p>La consigne écrite donnée au modèle. On l'améliore comme un texte de loi : on lit les erreurs, on précise la règle.</p><p class="here">3 versions testées, la v2 est en ligne.</p></div>
+      <div class="term"><h3>Sortie structurée <small>JSON</small></h3><p>On impose au modèle un format fixe (statut, réponse, sources) au lieu de texte libre. Le code peut alors tout vérifier.</p><p class="here">Statuts : répondu, partiel, pas dans la doc.</p></div>
+      <div class="term"><h3>Hallucination</h3><p>Quand le modèle affirme quelque chose qui n'est pas dans les sources, avec assurance.</p><p class="here">Mesurée sur les 12 questions sans réponse dans la doc.</p></div>
+      <div class="term"><h3>LLM juge <small>LLM-as-judge</small></h3><p>Une IA qui corrige les réponses d'une autre IA, avec une grille de notation et la bonne réponse sous les yeux.</p><p class="here">Gemini corrige. Vérifié contre tes 13 notes à la main.</p></div>
+      <div class="term"><h3>Température</h3><p>Le réglage « créativité » du modèle. À 0, il donne toujours la réponse la plus probable.</p><p class="here">Réglée à 0 : on veut des faits, pas de la créativité.</p></div>
+    </div>
+  </section>
+
+  <!-- 4. Measurement -->
+  <section id="mesure">
+    <p class="label">La preuve</p>
+    <h2>Comment je sais que ça marche</h2>
+
+    <div class="card">
+      <h3>Un jeu de 50 questions dont je connais la bonne réponse</h3>
+      <div class="stack" aria-label="Répartition des 50 questions">
+        <div style="flex: 15; background: var(--accent);" title="15 directes">15</div>
+        <div style="flex: 13; background: #4f7aa8;" title="13 reformulées, multi-documents ou en français">13</div>
+        <div style="flex: 5; background: var(--ok);" title="5 dont la réponse est un non écrit">5</div>
+        <div style="flex: 5; background: var(--warn);" title="5 partielles, dont 1 contradiction">5</div>
+        <div style="flex: 12; background: var(--bad);" title="12 sans réponse dans la doc">12</div>
+      </div>
+      <div class="legend">
+        <span style="--c: var(--accent)">15 faciles (mots de la doc)</span>
+        <span style="--c: #4f7aa8">13 reformulées, multi-docs ou en français</span>
+        <span style="--c: var(--ok)">5 où la réponse est « non »</span>
+        <span style="--c: var(--warn)">5 partielles, dont 1 contradiction</span>
+        <span style="--c: var(--bad)">12 sans réponse dans la doc</span>
+      </div>
+      <p class="note">Les 12 rouges sont les pièges : l'outil doit dire « je ne sais pas ». Les 5 vertes empêchent l'excès inverse : un outil qui dirait « je ne sais pas » partout aurait l'air prudent mais serait inutile.</p>
+    </div>
+
+    <div class="twocol">
+      <div class="card">
+        <p class="label">Contrôle 1</p>
+        <h3>Une IA corrige chaque réponse</h3>
+        <p class="note">Note sur 5 : est-ce juste, est-ce dans les sources, est-ce complet. Utile pour juger le sens, mais une IA peut se tromper.</p>
+      </div>
+      <div class="card">
+        <p class="label">Contrôle 2</p>
+        <h3>Du code compte les erreurs graves</h3>
+        <p class="note">Réponses inventées, sources manquantes, refus à tort. Pas d'IA, donc pas d'avis : des faits.</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Et j'ai vérifié le correcteur contre un humain</h3>
+      <p class="note">Tu as noté 13 réponses à la main : « peut-elle partir au client telle quelle ? ». Combien de fois chaque correcteur IA était d'accord avec toi :</p>
+      <div class="row"><span>Gemini</span><div class="track"><i style="width: 92.3%; background: var(--ok);"></i></div><span class="num">12 / 13</span></div>
+      <div class="row"><span>Ministral 14B</span><div class="track"><i style="width: 15.4%; background: var(--bad);"></i></div><span class="num">2 / 13</span></div>
+      <p class="note">Ministral refusait des réponses correctes. Ses notes mesuraient sa propre sévérité, pas la qualité. Depuis, c'est Gemini qui corrige.</p>
+    </div>
+  </section>
+
+  <!-- 5. Decisions -->
+  <section id="choix">
+    <p class="label">Ce que tu défends en entretien</p>
+    <h2>Les 4 choix, chiffres à l'appui</h2>
+    <div class="decisions">
+      <div class="decision">
+        <span class="big">v2, pas v3</span>
+        <h3>J'ai choisi la version qui n'invente rien</h3>
+        <p>La v3 avait la meilleure note du correcteur. Mais elle inventait une réponse. La v2 n'invente rien avec les deux modèles. Son coût : 1 ou 2 questions sur 38 marquées « pas dans la doc » à tort, qui partent en relecture.</p>
+        <p class="say">« J'ai optimisé pour l'erreur qui coûte cher, pas pour le score. »</p>
+      </div>
+      <div class="decision">
+        <span class="big">99 % vs 95 %</span>
+        <h3>La recherche « recommandée » a perdu</h3>
+        <p>Mélanger mots-clés et sens est le conseil habituel. Ici, le sens seul trouvait mieux la bonne section dans les 5 premiers résultats.</p>
+        <p class="say">« J'ai mesuré au lieu d'appliquer la bonne pratique par défaut. »</p>
+      </div>
+      <div class="decision">
+        <span class="big">12 vs 2</span>
+        <h3>J'ai vérifié mon correcteur</h3>
+        <p>Sans ta notation à la main, j'aurais publié des scores faussés par un correcteur défaillant.</p>
+        <p class="say">« Un correcteur automatique est un instrument de mesure : on le calibre avant de lui faire confiance. »</p>
+      </div>
+      <div class="decision">
+        <span class="big">Plan B</span>
+        <h3>La démo ne plante jamais</h3>
+        <p>Si Gemini est à court de quota : recherche par mots-clés et autre modèle. Si tout est en panne : réponses enregistrées pour les exemples, avec un message clair.</p>
+        <p class="say">« En déploiement, prévoir la panne fait partie du produit. »</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 6. Demo -->
+  <section id="demo">
+    <p class="label">En direct</p>
+    <h2>La démo en 3 minutes</h2>
+    <ol class="demo">
+      <li><div><strong>La vitrine</strong><p>tblabs.dev/work/trustdesk. Le problème en une phrase, les 4 statuts possibles.</p></div><span class="t">30 s</span></li>
+      <li><div><strong>Importer le questionnaire exemple</strong><p>Sur trustdesk.tblabs.dev : télécharger l'exemple .xlsx, le glisser sur la page, cliquer « Draft answers ». Garder Mistral : il répond en 1 seconde.</p></div><span class="t">1 min</span></li>
+      <li><div><strong>Montrer trois cas</strong><p>Une réponse avec sa source (déplier, cliquer : la section s'ouvre surlignée). FedRAMP : « pas dans la doc ». La suppression des données : deux documents qui se contredisent.</p></div><span class="t">1 min</span></li>
+      <li><div><strong>Leur faire poser une question</strong><p>Inviter le recruteur à taper sa propre question. Si elle n'est pas dans la doc, l'outil le dit. C'est le moment le plus convaincant.</p></div><span class="t">30 s</span></li>
+      <li><div><strong>Finir sur la page Quality</strong><p>Le tableau des versions : « la v3 avait la meilleure note, j'ai mis la v2 en ligne parce qu'elle n'invente rien ». Puis exporter l'Excel rempli.</p></div><span class="t">30 s</span></li>
+    </ol>
+  </section>
+
+  <!-- 7. Flashcards -->
+  <section id="questions">
+    <p class="label">Entraînement</p>
+    <h2>Questions d'entretien</h2>
+    <p class="note">Lis la question, réponds à voix haute, puis retourne la carte. Marque celles que tu maîtrises : la page s'en souvient.</p>
+    <div class="progress">
+      <span id="count">0 / 10 maîtrisées</span>
+      <div class="track"><i id="bar" style="width: 0%; background: var(--ok);"></i></div>
+      <button type="button" id="reset">Tout recommencer</button>
+    </div>
+    <div class="cards" id="cards"></div>
+  </section>
+
+  <footer>
+    <a href="https://trustdesk.tblabs.dev">L'app</a>
+    <a href="https://tblabs.dev/work/trustdesk">La vitrine</a>
+    <a href="https://github.com/theoucs/trustdesk">Le code</a>
+    <a href="https://github.com/theoucs/trustdesk/blob/main/docs/COMMENT_CA_MARCHE.md">Le document technique complet</a>
+  </footer>
+</div>
+
+<script>
+  // Real outputs from the app (prompt v2, Mistral), simplified for reading.
+  const EXAMPLES = {
+    fedramp: {
+      q: "Is Vantrel Plan FedRAMP authorized?",
+      sources: ["Hébergement › Fournisseur cloud", "Sécurité › Certifications", "FAQ › Accessibilité"],
+      model: 'Lit les 5 extraits. Aucun ne parle de FedRAMP. Il renvoie <code>not_found</code> et aucune source.',
+      check: "Pas de source à vérifier. Rien n'est affirmé, donc rien n'est bloqué.",
+      chip: '<span class="chip c-none">Pas dans la documentation</span>',
+      result: "« La documentation ne mentionne pas FedRAMP. » + les sections consultées, pour qu'un humain puisse vérifier.",
+    },
+    scim: {
+      q: "Do you support SCIM?",
+      sources: ["Accès › Provisionnement des utilisateurs", "Accès › Authentification", "Accès › Journaux d'audit"],
+      model: 'Trouve la réponse dans l\'extrait S1. Il renvoie <code>answered</code> et cite <code>S1</code>.',
+      check: "S1 existe bien parmi les extraits fournis : la source est validée et transformée en lien vers la doc.",
+      chip: '<span class="chip c-ok">Répondu</span>',
+      result: "« Oui, SCIM 2.0 est disponible sur l'offre Enterprise uniquement. » + lien vers la section.",
+    },
+    delete: {
+      q: "How long after contract termination is our data deleted?",
+      sources: ["Livre blanc sécurité › Rétention et suppression", "Accord de traitement › Restitution et suppression"],
+      model: 'Voit que deux documents disent des choses différentes (90 jours contre 30 + 30). Il renvoie <code>partial</code>, <code>conflict: true</code>, cite S1 et S2.',
+      check: "Les deux sources existent : validées. Le conflit est affiché en rouge.",
+      chip: '<span class="chip c-warn">Partiel</span> <span class="chip c-bad">Sources contradictoires</span>',
+      result: "Les deux versions sont citées. Personne ne choisit en silence : l'équipe sécurité tranche.",
+    },
+  };
+
+  function renderJourney(key) {
+    const e = EXAMPLES[key];
+    document.getElementById("journey").innerHTML = `
+      <div class="stage"><span class="who">1 · Question</span><h3>Ce que le client demande</h3><p class="out mono">${e.q}</p></div>
+      <div class="stage"><span class="who">2 · Recherche</span><h3>Les sections les plus proches</h3><ul class="sources">${e.sources.map((s) => `<li>${s}</li>`).join("")}<li>+ ${5 - e.sources.length} autres</li></ul></div>
+      <div class="stage"><span class="who">3 · Modèle</span><h3>Rédige, en format imposé</h3><p class="out">${e.model}</p></div>
+      <div class="stage"><span class="who">4 · Code</span><h3>Vérifie les sources</h3><p class="out">${e.check}</p></div>
+      <div class="stage final"><span class="who">5 · Résultat</span><div>${e.chip}</div><p class="out">${e.result}</p></div>`;
+    document.querySelectorAll(".tabs button").forEach((b) => b.setAttribute("aria-selected", String(b.dataset.ex === key)));
+  }
+  document.querySelectorAll(".tabs button").forEach((b) => b.addEventListener("click", () => renderJourney(b.dataset.ex)));
+  renderJourney("fedramp");
+
+  const CARDS = [
+    ["Comment évitez-vous que l'IA invente ?", ["Quatre couches. Le modèle ne lit que des extraits de la doc. Il a un statut « pas dans la doc » explicite. Du code bloque toute réponse sans source valide. Et je mesure le taux d'invention sur 12 questions pièges à chaque changement : 0 % aujourd'hui.", "Et en production, un humain valide avant envoi : l'outil fait des brouillons."]],
+    ["Pourquoi ne pas mettre toute la doc dans le prompt ?", ["Ici ça tiendrait. Mais sur une vraie base de milliers de pages, ce serait cher et lent, et les modèles lisent moins bien le milieu des longs textes.", "La recherche donne une liste précise de passages, ce qui rend les sources vérifiables. Pour un petit corpus, c'est un compromis à mesurer."]],
+    ["Comment savez-vous que votre outil est bon ?", ["50 questions dont je connais la réponse, dont 12 pièges sans réponse dans la doc. Deux contrôles : une IA qui note le sens, et du code qui compte les inventions.", "Et j'ai vérifié le correcteur IA contre mes propres notes : 12 accords sur 13 pour Gemini."]],
+    ["Pourquoi avoir mis en ligne la v2 et pas la v3, mieux notée ?", ["Parce que la v3 inventait une réponse et pas la v2. Dans un questionnaire de sécurité, un « je ne sais pas » coûte une relecture, une invention peut finir dans un contrat.", "J'optimise pour l'erreur qui coûte cher, pas pour le score global."]],
+    ["C'est quoi un embedding, simplement ?", ["Une liste de nombres qui représente le sens d'un texte. Deux phrases qui veulent dire la même chose ont des nombres proches, même avec des mots différents ou dans deux langues.", "C'est ce qui relie « vos ingénieurs voient-ils nos budgets ? » à la section « accès des employés aux données »."]],
+    ["Pourquoi deux modèles, Mistral et Gemini ?", ["Pour comparer sur les mêmes questions avec les mêmes passages, et pour qu'une IA puisse corriger l'autre.", "Résultat : à égalité (95,0 contre 95,1). J'utilise Mistral par défaut parce qu'il répond en 1 seconde de façon stable."]],
+    ["Votre correcteur IA est-il fiable ?", ["Je l'ai vérifié. J'ai noté 13 réponses à la main : Gemini était d'accord avec moi 12 fois, Ministral 2 fois seulement.", "Ministral refusait des réponses correctes, donc je l'ai écarté comme correcteur. Limite : 13 réponses et un seul annotateur, à élargir."]],
+    ["Que se passe-t-il si l'API tombe pendant la démo ?", ["Plan B en cascade : recherche par mots-clés si les embeddings ne répondent pas, autre modèle si le premier est indisponible, réponses enregistrées pour les questions d'exemple si tout tombe.", "Et jamais d'attente : la page bascule en quelques secondes."]],
+    ["Combien ça coûterait en production ?", ["Environ 1 000 tokens envoyés et 100 reçus par question (un token, c'est à peu près un mot). Un questionnaire de 300 questions coûte quelques centimes avec ces modèles.", "Le vrai coût est ailleurs : maintenir la documentation à jour et la relecture humaine."]],
+    ["Que faudrait-il pour un vrai client ?", ["Se brancher sur les vraies sources (Confluence, Drive, PDF), gérer les droits d'accès, une offre API qui n'entraîne pas sur les données du client, et relancer les 50 tests automatiquement à chaque changement.", "Et réutiliser les réponses validées par l'équipe sécurité comme nouvelles références."]],
+  ];
+
+  const STORE = "trustdesk-guide-known";
+  let known = new Set();
+  try { known = new Set(JSON.parse(localStorage.getItem(STORE) || "[]")); } catch (_) {}
+  const save = () => { try { localStorage.setItem(STORE, JSON.stringify([...known])); } catch (_) {} };
+
+  function renderCards() {
+    const box = document.getElementById("cards");
+    box.innerHTML = "";
+    CARDS.forEach(([q, a], i) => {
+      const card = document.createElement("article");
+      card.className = "fc" + (known.has(i) ? " known" : "");
+      card.innerHTML = `
+        <p class="q">${q}</p>
+        <div class="a" id="a${i}" hidden>${a.map((p) => `<p>${p}</p>`).join("")}</div>
+        <div class="actions">
+          <button type="button" class="reveal" aria-expanded="false" aria-controls="a${i}">Voir la réponse</button>
+          <button type="button" class="knowbtn" aria-pressed="${known.has(i)}">${known.has(i) ? "Maîtrisée" : "Je la maîtrise"}</button>
+        </div>`;
+      const ans = card.querySelector(".a");
+      const rev = card.querySelector(".reveal");
+      rev.addEventListener("click", () => {
+        ans.hidden = !ans.hidden;
+        rev.setAttribute("aria-expanded", String(!ans.hidden));
+        rev.textContent = ans.hidden ? "Voir la réponse" : "Cacher";
+      });
+      card.querySelector(".knowbtn").addEventListener("click", () => {
+        known.has(i) ? known.delete(i) : known.add(i);
+        save();
+        renderCards();
+        updateProgress();
+      });
+      box.appendChild(card);
+    });
+  }
+  function updateProgress() {
+    document.getElementById("count").textContent = `${known.size} / ${CARDS.length} maîtrisées`;
+    document.getElementById("bar").style.width = `${(known.size / CARDS.length) * 100}%`;
+  }
+  document.getElementById("reset").addEventListener("click", () => { known.clear(); save(); renderCards(); updateProgress(); });
+  renderCards();
+  updateProgress();
+</script>
