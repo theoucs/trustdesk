@@ -17,7 +17,13 @@ export type AnswerConfig = {
   promptVersion: keyof typeof PROMPTS;
 };
 
-export const DEFAULT_ANSWER_CONFIG: AnswerConfig = { topK: 5, temperature: 0, promptVersion: "v1" };
+/**
+ * Réglage retenu (mesuré, voir docs/COMMENT_CA_MARCHE.md §7.5) : prompt v2, le seul sans aucune réponse inventée
+ * avec les deux modèles. v3 a un meilleur score de juge mais réinvente sur une question piège : on optimise pour
+ * l'erreur qui coûte cher (une fausse affirmation), pas pour le score global. k = 5 : k = 8 coûte +30 % de tokens
+ * sans gain net.
+ */
+export const DEFAULT_ANSWER_CONFIG: AnswerConfig = { topK: 5, temperature: 0, promptVersion: "v2" };
 
 export type Citation = { id: string; doc: string; docTitle: string; section: string; excerpt: string };
 

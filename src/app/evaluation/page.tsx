@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { listRuns, type RunInfo } from "@/lib/data/runs";
+import { DEFAULT_ANSWER_CONFIG } from "@/lib/rag/answer";
+import { DEFAULT_RETRIEVAL } from "@/lib/rag/retrieve";
 
 export const metadata: Metadata = { title: "Quality" };
 
@@ -20,16 +22,27 @@ function Metric({ label, value, hint }: { label: string; value: string; hint: st
 
 export default function EvaluationPage() {
   const runs = listRuns();
-  const prompts = [...new Set(runs.map((r) => r.config.answer.promptVersion))].sort().reverse();
-  const latestPrompt = prompts[0];
-  const full = runs.filter((r) => r.summary.n === Math.max(...runs.map((x) => x.summary.n)));
-  const cell = (g: string, j: string, prompt = latestPrompt): RunInfo | undefined =>
+  const latestPrompt = DEFAULT_ANSWER_CONFIG.promptVersion;
+  // Only runs on the full test set with the production retrieval settings are compared (k=8 experiments are listed
+  // below but kept out of the matrix).
+  const full = runs.filter(
+    (r) =>
+      r.summary.n === Math.max(...runs.map((x) => x.summary.n)) &&
+      r.config.answer.topK === DEFAULT_ANSWER_CONFIG.topK &&
+      r.config.retrieval.mode === DEFAULT_RETRIEVAL.mode,
+  );
+  const prompts = [...new Set(full.map((r) => r.config.answer.promptVersion))].sort();
+  // Latest run first in `runs`, so find() returns the most recent run for a cell.
+  const cell = (g: string, j: string, prompt: string = latestPrompt): RunInfo | undefined =>
     full.find((r) => r.config.generator.provider === g && r.config.judge.provider === j && r.config.answer.promptVersion === prompt);
+  const matrixPrompts = prompts.filter((p) => PROVIDERS.every((g) => PROVIDERS.every((j) => cell(g, j, p))));
   // Headline: each model's score is the mean of BOTH graders. Each model is graded once by itself and once by the
   // other, so self-preference and grader strictness weigh equally on both. Deterministic metrics don't depend on the
   // grader (the answers are the same, from cache), so they are read from either run.
+  // Graders are only comparable with themselves, so only use graders that graded BOTH models.
+  const commonGraders = PROVIDERS.filter((j) => PROVIDERS.every((g) => cell(g, j)));
   const headline = PROVIDERS.flatMap((g) => {
-    const graded = PROVIDERS.map((j) => cell(g, j)).filter((r): r is RunInfo => Boolean(r));
+    const graded = commonGraders.map((j) => cell(g, j)).filter((r): r is RunInfo => Boolean(r));
     if (!graded.length) return [];
     const score = graded.reduce((sum, r) => sum + r.summary.globalScore, 0) / graded.length;
     return [{ generator: g, graded, score, base: graded[0] }];
@@ -79,7 +92,57 @@ export default function EvaluationPage() {
         </section>
       )}
 
-      {prompts.map((prompt) => (
+      {prompts.length > 1 && (
+        <section className="space-y-3">
+          <h2 className="font-semibold">Prompt versions</h2>
+          <p className="max-w-3xl text-[13px] text-muted">
+            Each version fixes the errors found by reading the weakest answers of the previous one. v2 is in use: it is
+            the only version where neither model asserted anything the documentation does not say. v3 scores higher with
+            the grader but brings back one invented answer — and an invented answer is the costly mistake in a security
+            questionnaire.
+          </p>
+          <div className="overflow-x-auto rounded-md border border-border bg-surface">
+            <table className="w-full text-left text-[13px]">
+              <thead className="border-b border-border bg-surface-muted text-muted">
+                <tr>
+                  <th className="px-3 py-2 font-medium">Prompt</th>
+                  {PROVIDERS.map((g) => (
+                    <th key={g} colSpan={3} className="px-3 py-2 font-medium">
+                      {NAMES[g]} — score (graded by {NAMES[g === "mistral" ? "gemini" : "mistral"]}) · invented · missed
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border">
+                {prompts.map((p) => (
+                  <tr key={p} className={p === latestPrompt ? "bg-accent-soft/50" : ""}>
+                    <td className="px-3 py-2 font-mono text-xs">
+                      {p}
+                      {p === latestPrompt && <span className="ml-2 font-sans text-accent">in use</span>}
+                    </td>
+                    {PROVIDERS.map((g) => {
+                      const r = cell(g, g === "mistral" ? "gemini" : "mistral", p);
+                      return r ? (
+                        [
+                          <td key="s" className="px-3 py-2 font-semibold tabular-nums">{r.summary.globalScore.toFixed(1)}</td>,
+                          <td key="h" className={`px-3 py-2 tabular-nums ${r.summary.hallucinationRate > 0 ? "text-bad" : "text-ok"}`}>
+                            {pct(r.summary.hallucinationRate)}
+                          </td>,
+                          <td key="m" className="px-3 py-2 tabular-nums">{pct(r.summary.falseAbstentionRate)}</td>,
+                        ]
+                      ) : (
+                        <td key={g} colSpan={3} className="px-3 py-2 text-muted">—</td>
+                      );
+                    })}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      )}
+
+      {matrixPrompts.map((prompt) => (
         <section key={prompt} className="space-y-3">
           <h2 className="font-semibold">Model × grader matrix · prompt {prompt}</h2>
           <p className="max-w-3xl text-[13px] text-muted">

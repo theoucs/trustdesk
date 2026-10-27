@@ -234,6 +234,7 @@ Découvertes faites en testant (bons sujets d'entretien, ce sont de vrais probl�
 - **Sur l'offre gratuite Mistral, `mistral-small` et `mistral-medium` ont un quota de 0 requête/minute** (visible dans l'en-tête `x-ratelimit-limit-req-minute: 0`). Seuls les *Ministral* (3B, 8B, 14B) sont utilisables. On a donc choisi le plus gros disponible, et mis en face un Gemini **de gamme comparable** (Flash-Lite plutôt que Flash, qui est plus gros et « réfléchit » avant de répondre — 279 tokens de raisonnement pour dire « pong »).
 - **Les noms de version ne sont pas une garantie** : en demandant `gemini-3.5-flash`, l'API a répondu avec `gemini-3.6-flash`. Chaque run enregistre donc le modèle **réellement servi** (`served` dans `config.json`), pas seulement celui demandé.
 - **Latence très variable sur le gratuit** : Gemini Flash-Lite répond entre 0,8 s et 10 s pour la même taille de requête (file d'attente partagée). Ministral 14B : ~1 s stable. À prendre en compte pour une démo publique.
+- **La sortie structurée garantit la forme, pas la fin du JSON.** En juge, Ministral 14B a produit deux pannes : un raisonnement trop long coupé par la limite de tokens, et une **boucle dégénérée** (un guillemet ouvert, puis des tabulations jusqu'à la limite). Correctif : nouvel essai avec plus de tokens, puis avec une température un peu plus haute (0,4), qui suffit à sortir de la boucle. On n'a **pas** modifié la consigne du juge pour autant : changer l'instrument de mesure en cours de route aurait rendu les runs incomparables.
 - **Gouvernance des données** : sur les offres gratuites, les fournisseurs peuvent utiliser les requêtes pour améliorer leurs modèles. Acceptable ici (données fictives), **inacceptable** pour la vraie documentation d'un client — en production : offre payante avec engagement de non-entraînement, ou modèle auto-hébergé (les poids Ministral sont ouverts).
 
 ### 6.3 Le prompt et la sortie structurée — `src/lib/rag/answer.ts`
@@ -338,7 +339,43 @@ Méthode : lire les réponses les moins bien notées du run v1, classer les erre
 | Condition mal appliquée | Datadog US « pour les clients US » lu comme « pour tous » | raisonnement | v2 : règle 5 « applique les conditions (plan, région) précisément » |
 | « Non documenté » alors que ça l'est | q24 : accès bastion des employés | **recherche** : la bonne section n'était pas dans les 5 extraits | pas un problème de prompt → test séparé avec k = 8 |
 
-⏳ *Résultats v1 → v2 → v2 k=8 : complétés à la fin des runs.*
+**Résultats v1 → v2** (métriques déterministes : elles ne dépendent pas du juge)
+
+| | Mistral v1 | Mistral v2 | Gemini v1 | Gemini v2 |
+|---|---|---|---|---|
+| Réponses inventées (questions non documentées) | 8 % | **0 %** | 17 % | **0 %** |
+| « Pas dans la doc » à tort (questions documentées) | 0 % | 5 % | 0 % | 3 % |
+| Réponses avec markdown | 30 / 50 | 0 / 50 | — | — |
+| Score (même juge que v1) | 96,1 (Gemini) | 95,0 | 88,4 (Mistral) | 90,5 |
+
+**Lecture :** le v2 a supprimé les réponses inventées chez les deux modèles — l'objectif n°1. Mais il a **sur-corrigé** : « *Can our data be hosted in Australia?* » donnait « Non, seulement EU et US » (juste : la doc dit « *no other regions are offered* ») et donne maintenant « pas dans la doc ». La règle « ne substitue pas une info voisine » a été appliquée trop largement. C'est **le compromis central d'un système RAG** : plus on pousse à l'abstention, moins il invente, mais plus il refuse de répondre à tort. Le score global du juge bouge à peine (et même baisse pour Mistral) alors que le profil de risque a profondément changé — encore une raison de ne pas piloter sur un seul chiffre.
+
+**v3** distingue explicitement « la doc ne parle pas du sujet » (not_found) et « la doc exclut le cas » (liste exhaustive → « Non »).
+
+| | v1 | v2 | v3 |
+|---|---|---|---|
+| Mistral — score (jugé par Gemini) | 96,1 | 95,0 | **97,7** |
+| Mistral — inventées / refus à tort | 8 % / 0 % | **0 %** / 5 % | 8 % / 3 % |
+| Gemini — score (jugé par Mistral) | 88,4 | **90,5** | 87,7 |
+| Gemini — inventées / refus à tort | 17 % / 0 % | **0 %** / 3 % | 8 % / 0 % |
+
+Le v3 récupère l'Australie, mais les deux modèles retombent dans le piège q44 (MTTR → délais de première réponse). Un modèle de 14 milliards de paramètres a du mal à tenir **deux règles en tension** dans le même prompt (« réponds non quand la doc exclut » / « ne réponds pas quand la doc parle d'autre chose »).
+
+**Décision : prompt v2 en production**, alors que le v3 a le meilleur score du juge pour Mistral. C'est le seul réglage où **aucun des deux modèles n'invente de réponse**. Une fausse abstention coûte une relecture humaine (et l'app affiche les sections consultées pour la faciliter) ; une fausse affirmation peut finir dans un contrat. **On optimise pour l'erreur qui coûte cher, pas pour le score global.** C'est sans doute le message le plus important du projet pour un entretien.
+
+Pistes non explorées (à citer comme « next steps ») : quelques exemples dans le prompt (*few-shot*) pour les cas limites ; un second appel « vérificateur » qui ne relit que les réponses `answered/partial` aux questions de type « avez-vous X ? » ; un modèle plus gros (hors offre gratuite).
+
+**Faut-il donner plus d'extraits au modèle ? (k = 5 → 8, prompt v2)**
+
+| | Mistral k=5 | Mistral k=8 | Gemini k=5 | Gemini k=8 |
+|---|---|---|---|---|
+| Score | 95,0 | 95,8 | 90,5 | 86,9 |
+| Réponses inventées | 0 % | 0 % | 0 % | **8 %** |
+| Tokens en entrée / question | ~1 000 | ~1 300 | | |
+
+- La question ciblée (q24, accès bastion des employés) **n'est pas corrigée** : la section n'est même pas dans les 12 premiers résultats des embeddings, alors que **BM25 la classe 2e** (mots exacts « MFA », « production »). Le problème n'est pas k, c'est que la question a **deux volets** (clients ET employés) et que son vecteur « moyen » ressemble surtout au premier. Bonne solution, non implémentée : **décomposer** les questions multi-volets en sous-requêtes (un appel LLM de plus), ou pondérer davantage BM25 sur ce type de question.
+- Plus de contexte n'est **pas gratuit** : +30 % de tokens, et Gemini se remet à inventer sur q44 (plus d'extraits voisins = plus de « matière » pour une réponse plausible mais fausse).
+- **Décision : k = 5.**
 
 ### 7.6 Calibrer le juge contre un humain — `npm run calibrate`
 

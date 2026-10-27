@@ -81,16 +81,27 @@ Assistant answer: ${a.answer || "(empty)"}
 Excerpts cited by the assistant:
 ${cited}`;
 
-  // Un juge bavard peut dépasser la limite de tokens : la sortie est alors coupée, et un JSON coupé est invalide
-  // (la sortie structurée garantit la forme, pas la longueur). On réessaie avec plus de place.
-  let res = await judge.chat({ system: SYSTEM, user, temperature: 0, schema: SCHEMA, maxTokens: 800 });
-  let s: JudgeScores;
-  try {
-    s = JSON.parse(res.text) as JudgeScores;
-  } catch {
-    res = await judge.chat({ system: SYSTEM, user, temperature: 0, schema: SCHEMA, maxTokens: 2000 });
-    s = JSON.parse(res.text) as JudgeScores;
+  // Deux pannes observées avec Ministral 14B en juge : un raisonnement trop long coupé par la limite de tokens, et une
+  // boucle dégénérée (un guillemet ouvert dans le raisonnement, puis des tabulations jusqu'à la limite). La sortie
+  // structurée garantit la forme du JSON, pas qu'il se termine. On réessaie avec plus de place, puis avec une
+  // température un peu plus haute, qui suffit à sortir de la boucle. Chaque essai a sa propre entrée de cache.
+  const attempts = [
+    { temperature: 0, maxTokens: 800 },
+    { temperature: 0, maxTokens: 2000 },
+    { temperature: 0.4, maxTokens: 1200 },
+  ];
+  let res: Awaited<ReturnType<ChatClient["chat"]>> | undefined;
+  let s: JudgeScores | undefined;
+  for (const a of attempts) {
+    res = await judge.chat({ system: SYSTEM, user, schema: SCHEMA, ...a });
+    try {
+      s = JSON.parse(res.text) as JudgeScores;
+      break;
+    } catch {
+      console.warn(`  ↻ juge ${judge.model} : JSON invalide (${res.text.length} caractères), nouvel essai`);
+    }
   }
+  if (!s || !res) throw new Error(`Juge ${judge.model} : aucune sortie JSON valide après ${attempts.length} essais`);
   const clamp = (n: number) => Math.min(5, Math.max(1, Math.round(Number(n)) || 1));
   return {
     reasoning: s.reasoning,
