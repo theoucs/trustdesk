@@ -13,7 +13,7 @@ const nextConfig: NextConfig = {
   },
   // Fichiers lus avec fs à l'exécution : à embarquer explicitement dans les fonctions serverless.
   outputFileTracingIncludes: {
-    "/api/answer": ["./knowledge-base/**/*", "./data/embeddings/**/*"],
+    "/api/answer": ["./knowledge-base/**/*", "./data/**/*"],
     "/evaluation": ["./runs/**/*", "./eval/human-labels.jsonl"],
     "/evaluation/*": ["./runs/**/*"],
     "/knowledge/*": ["./knowledge-base/**/*"],

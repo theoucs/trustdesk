@@ -24,7 +24,10 @@ export async function POST(request: NextRequest) {
   } catch (err) {
     console.error("[answer]", err);
     return Response.json(
-      { error: "The answer could not be drafted right now (model provider unavailable or quota reached)." },
+      {
+        error:
+          "Both models are unavailable right now (free tier limits). The sample questions still work, or try again in a few hours.",
+      },
       { status: 502 },
     );
   }

@@ -384,22 +384,22 @@ Un juge LLM est un instrument de mesure : avant de lui faire confiance, on véri
 
 Les notes humaines sont stockées dans `eval/human-labels.jsonl`, indexées par (question, texte exact de la réponse) : elles restent valables pour tous les futurs runs qui produisent la même réponse.
 
-**Résultats (13 réponses notées à la main, choisies d'abord là où les deux juges n'étaient pas d'accord)** :
+**Résultats (13 réponses notées à la main, choisies d'abord là où les deux juges n'étaient pas d'accord)**. Les pourcentages sont calculés **par réponse** (une réponse notée dans plusieurs runs ne compte qu'une fois, avec sa notation la plus récente) :
 
 | Évaluateur | Accord avec l'humain | Trop indulgent | Trop sévère |
 |---|---|---|---|
-| **Gemini en juge** | **94 %** | 1 | 0 |
-| **Ministral 14B en juge** | **13 %** | 0 | 13 |
-| Règle déterministe (abstention) | 85 % | 1 | 1 |
+| **Gemini en juge** | **92 %** (12/13) | 1 | 0 |
+| **Ministral 14B en juge** | **15 %** (2/13) | 0 | 11 |
+| Règle déterministe (abstention) | 85 % (11/13) | 1 | 1 |
 
 **Lecture :**
 
 1. **Le juge Ministral 14B ne suit pas sa grille.** Il met 3/5, voire 1/5, en fidélité à des réponses « pas dans la doc » parfaitement correctes, alors que la grille dit explicitement 5. Ses notes mesurent surtout sa propre sévérité : l'« écart de 8 points entre juges » de la matrice était en réalité **un juge défaillant**, pas une différence de goût.
-2. **Gemini devient le juge de référence** des scores affichés : 94 % d'accord avec un humain, et aucune auto-préférence mesurée dans la matrice v1. Les scores de juges différents n'étant pas comparables, l'app affiche « en attente » plutôt que de se rabattre sur l'autre juge quand une notation manque.
+2. **Gemini devient le juge de référence** des scores affichés : 12 réponses sur 13 en accord avec un humain, et aucune auto-préférence mesurée dans la matrice v1. Les scores de juges différents n'étant pas comparables, l'app affiche « en attente » plutôt que de se rabattre sur l'autre juge quand une notation manque.
 3. **L'humain a aussi corrigé la règle déterministe** : sur q44 (MTTR), la réponse dit honnêtement « pas de MTTR documenté, voici les délais de première réponse ». La règle la comptait comme inventée (statut *partial* sur une question sans réponse) ; l'humain l'a jugée envoyable. La règle est un garde-fou utile mais trop stricte sur ce cas : c'est exactement le rôle de la calibration de révéler ça.
 4. **Limites honnêtes** : 13 réponses, un seul annotateur, échantillon biaisé vers les cas difficiles (désaccords entre juges). Pour aller plus loin : 50+ réponses, 2 annotateurs, et mesurer leur accord entre eux (kappa de Cohen).
 
-> Phrase pour l'entretien : *« Avant de faire confiance à mon juge automatique, je l'ai comparé à un humain. Un des deux juges n'était d'accord avec moi qu'une fois sur huit : sans cette vérification, j'aurais publié des scores qui mesuraient la sévérité du juge, pas la qualité du modèle. »*
+> Phrase pour l'entretien : *« Avant de faire confiance à mon juge automatique, je l'ai comparé à un humain. Un des deux juges n'était d'accord avec moi que sur 2 réponses sur 13 : sans cette vérification, j'aurais publié des scores qui mesuraient la sévérité du juge, pas la qualité du modèle. »*
 
 ---
 
@@ -423,6 +423,19 @@ Choix techniques :
 - Pages documentation et évaluation **pré-rendues au build** (statiques) : elles lisent des fichiers du dépôt.
 
 ---
+
+### 8.1 Plan B : la démo ne doit jamais planter devant un recruteur
+
+Les offres gratuites ont des quotas (Gemini : 500 requêtes/jour/modèle). Si le quota est épuisé, Gemini demande d'attendre **jusqu'à 17 heures** ; un code de retry naïf ferait attendre la page indéfiniment. Le serveur de l'app applique donc une politique différente des scripts (`setRetryPolicy` : 1 seul nouvel essai, jamais plus de 4 s d'attente) et descend une échelle de replis (`src/lib/server/pipeline.ts`) :
+
+| Panne | Repli | Ce que voit l'utilisateur |
+|---|---|---|
+| Embeddings Gemini indisponibles | Recherche par mots-clés (BM25), sans API | La réponse + « Keyword search was used… » |
+| Modèle choisi indisponible | L'autre modèle | La réponse + « Drafted by Mistral: Gemini is not available right now. » |
+| Les deux modèles indisponibles | Réponse **pré-calculée** pour les questions d'exemple (`data/saved-answers.json`, `npm run save-samples`) | La réponse + « This is the answer saved on … » |
+| Tout indisponible, question libre | Message d'erreur explicite, immédiat | « Both models are unavailable right now… The sample questions still work » |
+
+Testé en lançant l'app avec de fausses clés. Et pour que les évaluations ne vident pas le quota de la démo : les scripts utilisent `GEMINI_EVAL_API_KEY` si elle existe, une clé créée dans **un autre projet Google** (le quota gratuit est compté par projet).
 
 ## 9. Démo live en entretien (3 minutes)
 

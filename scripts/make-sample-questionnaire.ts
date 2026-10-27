@@ -4,24 +4,9 @@
  * Usage : npx tsx scripts/make-sample-questionnaire.ts
  */
 import writeExcelFile from "write-excel-file/node";
+import { SAMPLE_SPREADSHEET } from "../src/lib/samples";
 
-const Q: [string, string][] = [
-  ["Data protection", "Is customer data encrypted at rest? Please specify the algorithm and key management."],
-  ["Data protection", "Which TLS versions are supported for data in transit?"],
-  ["Hosting", "Where is customer data hosted for European customers?"],
-  ["Hosting", "Les données sont-elles hébergées en France ?"],
-  ["Identity", "Do you support SAML-based single sign-on with Okta?"],
-  ["Identity", "Is SMS-based two-factor authentication supported?"],
-  ["Access control", "Can your support engineers access our financial data?"],
-  ["Resilience", "What are your RPO and RTO?"],
-  ["Compliance", "Can you provide your SOC 2 Type II report?"],
-  ["Compliance", "Is Vantrel Plan FedRAMP authorized?"],
-  ["Compliance", "Can you provide your SOC 1 report?"],
-  ["Security testing", "Do you have a bug bounty program, and what are the reward amounts?"],
-  ["Data lifecycle", "How long after contract termination is our data deleted?"],
-  ["Third parties", "Please list your sub-processors."],
-  ["Insurance", "What is the coverage amount of your cyber insurance policy?"],
-];
+const Q = SAMPLE_SPREADSHEET;
 
 const bold = { fontWeight: "bold" as const };
 const head = (value: string) => ({ value, ...bold, backgroundColor: "#D9E1F2" });

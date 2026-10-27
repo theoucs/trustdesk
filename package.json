@@ -14,7 +14,8 @@
     "eval": "tsx scripts/eval.ts",
     "compare": "tsx scripts/compare.ts",
     "screenshot": "tsx scripts/screenshot.ts",
-    "calibrate": "tsx scripts/calibrate.ts"
+    "calibrate": "tsx scripts/calibrate.ts",
+    "save-samples": "tsx scripts/save-sample-answers.ts"
   },
   "dependencies": {
     "marked": "^18.1.2",

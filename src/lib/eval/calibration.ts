@@ -43,16 +43,26 @@ export function judgeAgreement(
     tally.set(evaluator, t);
   };
 
+  // One verdict per (answer, grader): the same answer can appear in several runs. The most recent grading wins,
+  // so percentages are over distinct answers, as the page says.
   const distinct = new Map<string, QuestionResult>();
-  for (const run of runs) {
+  const verdicts = new Map<string, { judge: string; ok: boolean; human: boolean }>();
+  for (const run of [...runs].sort((a, b) => a.id.localeCompare(b.id))) {
     const judge = run.id.match(/judged-by-([a-z]+)/)?.[1] ?? "?";
     for (const r of run.results) {
       const key = answerKey(r);
       distinct.set(key, r);
       const h = labels.get(key);
-      if (h) add(`judge:${judge}`, r.judge.correctness >= 4 && r.judge.faithfulness >= 4, h.acceptable);
+      if (h) {
+        verdicts.set(`${key}:${judge}`, {
+          judge,
+          ok: r.judge.correctness >= 4 && r.judge.faithfulness >= 4,
+          human: h.acceptable,
+        });
+      }
     }
   }
+  for (const v of verdicts.values()) add(`judge:${v.judge}`, v.ok, v.human);
   for (const [key, r] of distinct) {
     const h = labels.get(key);
     if (!h) continue;

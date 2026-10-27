@@ -3,21 +3,10 @@
 import { useRef, useState } from "react";
 import { chunkLabel, citationHref } from "@/lib/anchors";
 import type { Answer, AnswerStatus } from "@/lib/rag/answer";
+import { SAMPLE_QUESTIONS } from "@/lib/samples";
 import { StatusBadge } from "./status-badge";
 
-const SAMPLE = [
-  "Is customer data encrypted at rest? Which algorithm is used?",
-  "Where is customer data hosted for European customers?",
-  "Do you support SAML-based single sign-on with Okta?",
-  "Can your support engineers access our financial data?",
-  "What are your RPO and RTO?",
-  "Is SMS-based two-factor authentication supported?",
-  "Do you have a bug bounty program, and what are the reward amounts?",
-  "Is Vantrel Plan FedRAMP authorized?",
-  "Can you provide your SOC 1 report?",
-  "How long after contract termination is our data deleted?",
-  "Les données sont-elles hébergées en France ?",
-].join("\n");
+const SAMPLE = SAMPLE_QUESTIONS.join("\n");
 
 const MAX_QUESTIONS = 20;
 
@@ -36,7 +25,8 @@ const MODELS = [
 type Row = {
   question: string;
   state: "queued" | "running" | "done" | "error";
-  answer?: Answer;
+  /** `notice` explains a fallback: other model, keyword search, or a saved answer when no model is available. */
+  answer?: Answer & { notice?: string };
   error?: string;
 };
 
@@ -73,12 +63,15 @@ export function Questionnaire() {
           body: JSON.stringify({ question: qs[i], generator }),
         });
         const data = await res.json();
-        if (!res.ok) throw new Error(data.error ?? `HTTP ${res.status}`);
+        if (!res.ok) {
+          setRows((r) => r.map((row, j) => (j === i ? { ...row, state: "error", error: data.error } : row)));
+          // Our own rate limit: no point sending the remaining questions now.
+          if (res.status === 429) break;
+          continue;
+        }
         setRows((r) => r.map((row, j) => (j === i ? { ...row, state: "done", answer: data } : row)));
-      } catch (e) {
-        const message = e instanceof Error ? e.message : "Request failed";
-        setRows((r) => r.map((row, j) => (j === i ? { ...row, state: "error", error: message } : row)));
-        if (message.toLowerCase().includes("limit")) break;
+      } catch {
+        setRows((r) => r.map((row, j) => (j === i ? { ...row, state: "error", error: "Network error" } : row)));
       }
     }
     setRunning(false);
@@ -320,6 +313,7 @@ function AnswerRow({ index, row }: { index: number; row: Row }) {
                   .join(" · ")}
               </p>
             )}
+            {a.notice && <p className="text-xs text-warn">{a.notice}</p>}
             {a.warnings.length > 0 && <p className="text-xs text-bad">{a.warnings.join(" · ")}</p>}
           </>
         )}

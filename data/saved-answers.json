@@ -1,0 +1,737 @@
+{
+ "builtAt": "2026-10-27T13:54:39.943Z",
+ "prompt": "v2",
+ "answers": {
+  "is customer data encrypted at rest? which algorithm is used?": {
+   "question": "Is customer data encrypted at rest? Which algorithm is used?",
+   "consulted": [
+    {
+     "id": "02-security-whitepaper#Encryption",
+     "score": 0.7409286503853343
+    },
+    {
+     "id": "02-security-whitepaper#Tenant isolation",
+     "score": 0.6710445131637753
+    },
+    {
+     "id": "02-security-whitepaper#Data retention and deletion",
+     "score": 0.6648690237198361
+    },
+    {
+     "id": "03-infrastructure-hosting#Cloud provider",
+     "score": 0.6552725273677975
+    },
+    {
+     "id": "04-identity-access#Vantrel employee access to customer data",
+     "score": 0.650795861447938
+    }
+   ],
+   "model": "ministral-14b-2512",
+   "usage": {
+    "inputTokens": 1037,
+    "outputTokens": 68
+   },
+   "latencyMs": 1498,
+   "cached": false,
+   "status": "answered",
+   "answer": "Yes, customer data stored in databases, file storage, and backups is encrypted at rest using AES-256. Keys are managed in AWS Key Management Service (KMS) and rotated automatically every year.",
+   "citations": [
+    {
+     "id": "02-security-whitepaper#Encryption",
+     "doc": "02-security-whitepaper",
+     "docTitle": "Security Whitepaper",
+     "section": "Encryption",
+     "excerpt": "- **Data at rest**: all customer data stored in databases, file storage and backups is encrypted using AES-256, with keys managed in AWS Key Management Service (KMS). Keys are rotated automatically every year.\n- **Data in transit**: all connections to Vantrel Plan use TLS 1.2 or higher. TLS 1.3 is preferred and negotiated whenever the client supports it. Older protocols (SSL, TLS 1.0 and 1.1) are disabled. HTTP Strict Transport Security (HSTS) is enforced.\n- **Customer-managed keys (BYOK)**: Enterprise customers can provide and control their own encryption key through AWS KMS. Revoking the key makes the customer's data unreadable by Vantrel."
+    }
+   ],
+   "conflict": false,
+   "warnings": []
+  },
+  "where is customer data hosted for european customers?": {
+   "question": "Where is customer data hosted for European customers?",
+   "consulted": [
+    {
+     "id": "05-data-processing-agreement#International data transfers",
+     "score": 0.7714960138367897
+    },
+    {
+     "id": "03-infrastructure-hosting#Hosting regions",
+     "score": 0.7422543920903419
+    },
+    {
+     "id": "03-infrastructure-hosting#Logging and monitoring",
+     "score": 0.7307929327976839
+    },
+    {
+     "id": "06-subprocessors#Infrastructure sub-processors",
+     "score": 0.7255565807337774
+    },
+    {
+     "id": "06-subprocessors#Service sub-processors",
+     "score": 0.6996209776049068
+    }
+   ],
+   "model": "ministral-14b-2512",
+   "usage": {
+    "inputTokens": 1051,
+    "outputTokens": 117
+   },
+   "latencyMs": 1282,
+   "cached": false,
+   "status": "answered",
+   "answer": "For European customers, customer data is hosted in the European Union, specifically in AWS eu-west-3 (Paris, France) as the primary location with disaster recovery in AWS eu-central-1 (Frankfurt, Germany). Customer data at rest, including backups and disaster recovery copies, remains within the selected EU region. Infrastructure and application logs for EU-hosted tenants are centralized in Datadog’s EU site.",
+   "citations": [
+    {
+     "id": "05-data-processing-agreement#International data transfers",
+     "doc": "05-data-processing-agreement",
+     "docTitle": "Data Processing Agreement (summary)",
+     "section": "International data transfers",
+     "excerpt": "For customers hosted in the EU region, customer data is stored and processed in the European Union. Limited remote access by support staff located outside the EU may occur, in which case transfers are covered by the European Commission's Standard Contractual Clauses (SCCs) and a transfer impact assessment.\n\nVantrel Inc. (US) is covered by the EU-U.S. Data Privacy Framework."
+    },
+    {
+     "id": "03-infrastructure-hosting#Hosting regions",
+     "doc": "03-infrastructure-hosting",
+     "docTitle": "Infrastructure and Hosting",
+     "section": "Hosting regions",
+     "excerpt": "Customers choose a hosting region when their tenant is created:\n\n| Region | Primary location | Disaster recovery location |\n|---|---|---|\n| EU (default) | AWS eu-west-3 (Paris, France) | AWS eu-central-1 (Frankfurt, Germany) |\n| US (available since 2024) | AWS us-east-1 (N. Virginia) | AWS us-west-2 (Oregon) |\n\nCustomer data at rest stays within the selected region, including backups and disaster recovery copies. Moving an existing tenant from one region to another is possible on request for Enterprise customers.\n\nNo other hosting regions are currently offered."
+    },
+    {
+     "id": "06-subprocessors#Infrastructure sub-processors",
+     "doc": "06-subprocessors",
+     "docTitle": "Sub-processors",
+     "section": "Infrastructure sub-processors",
+     "excerpt": "| Sub-processor | Purpose | Data location |\n|---|---|---|\n| Amazon Web Services EMEA SARL | Cloud hosting, storage, backups | Region selected by the customer (EU or US) |\n| Cloudflare, Inc. | CDN, Web Application Firewall, DDoS protection | Global edge network (traffic in transit only) |\n| Datadog, Inc. | Infrastructure and application monitoring, logs | EU (for EU tenants), US (for US tenants) |"
+    }
+   ],
+   "conflict": false,
+   "warnings": []
+  },
+  "do you support saml-based single sign-on with okta?": {
+   "question": "Do you support SAML-based single sign-on with Okta?",
+   "consulted": [
+    {
+     "id": "04-identity-access#Customer authentication",
+     "score": 0.646777383980573
+    },
+    {
+     "id": "04-identity-access#User provisioning",
+     "score": 0.6072121671555977
+    },
+    {
+     "id": "01-company-overview#Product and delivery model",
+     "score": 0.6038473789016343
+    },
+    {
+     "id": "12-product-faq#Which integrations are available?",
+     "score": 0.6006764840239823
+    },
+    {
+     "id": "09-sla-support#Support",
+     "score": 0.5981378911444102
+    }
+   ],
+   "model": "ministral-14b-2512",
+   "usage": {
+    "inputTokens": 1097,
+    "outputTokens": 65
+   },
+   "latencyMs": 1047,
+   "cached": false,
+   "status": "answered",
+   "answer": "Yes, Vantrel supports SAML-based single sign-on with Okta on Business and Enterprise plans. This is explicitly tested and documented as a supported identity provider for SAML 2.0.",
+   "citations": [
+    {
+     "id": "04-identity-access#Customer authentication",
+     "doc": "04-identity-access",
+     "docTitle": "Identity and Access Management",
+     "section": "Customer authentication",
+     "excerpt": "Vantrel Plan supports the following authentication methods for customer users:\n\n- **Email and password**: passwords must contain at least 12 characters and are checked against known breached password lists. Passwords are hashed with Argon2id.\n- **Multi-factor authentication (MFA)**: users can enable MFA using a TOTP authenticator app or a FIDO2/WebAuthn security key. Administrators can make MFA mandatory for all users of their workspace. SMS-based MFA is not supported.\n- **Single Sign-On (SSO)**: SAML 2.0 and OpenID Connect (OIDC) are supported on Business and Enterprise plans. Tested identity providers include Microsoft Entra ID, Okta and Google Workspace. When SSO is enforced, password login is disabled for the workspace.\n\nSessions expire after 12 hours by default. Workspace administrators can configure a shorter session timeout."
+    }
+   ],
+   "conflict": false,
+   "warnings": []
+  },
+  "can your support engineers access our financial data?": {
+   "question": "Can your support engineers access our financial data?",
+   "consulted": [
+    {
+     "id": "04-identity-access#Vantrel employee access to customer data",
+     "score": 0.7136341346036017
+    },
+    {
+     "id": "02-security-whitepaper#Tenant isolation",
+     "score": 0.6772396905280699
+    },
+    {
+     "id": "05-data-processing-agreement#International data transfers",
+     "score": 0.664652802080773
+    },
+    {
+     "id": "03-infrastructure-hosting#Logging and monitoring",
+     "score": 0.6643210423688215
+    },
+    {
+     "id": "03-infrastructure-hosting#Cloud provider",
+     "score": 0.6618714374739901
+    }
+   ],
+   "model": "ministral-14b-2512",
+   "usage": {
+    "inputTokens": 948,
+    "outputTokens": 74
+   },
+   "latencyMs": 935,
+   "cached": false,
+   "status": "answered",
+   "answer": "Vantrel support engineers can only access customer financial data if temporary access is explicitly granted by the customer from the administration console. Access is time-limited to a maximum of 72 hours, logged, and visible in the customer’s audit trail.",
+   "citations": [
+    {
+     "id": "04-identity-access#Vantrel employee access to customer data",
+     "doc": "04-identity-access",
+     "docTitle": "Identity and Access Management",
+     "section": "Vantrel employee access to customer data",
+     "excerpt": "Vantrel employees do not have standing access to customer data. Support engineers can only access a customer workspace when the customer grants temporary access from the administration console. Access is time-limited (maximum 72 hours), logged, and visible to the customer in the audit trail.\n\nAccess rights of Vantrel employees to internal systems are reviewed quarterly, and access is revoked within 24 hours when an employee leaves the company."
+    }
+   ],
+   "conflict": false,
+   "warnings": []
+  },
+  "what are your rpo and rto?": {
+   "question": "What are your RPO and RTO?",
+   "consulted": [
+    {
+     "id": "07-business-continuity#Objectives",
+     "score": 0.7433776342387475
+    },
+    {
+     "id": "07-business-continuity#Testing",
+     "score": 0.6959758723747433
+    },
+    {
+     "id": "07-business-continuity#Backups",
+     "score": 0.6958462979331634
+    },
+    {
+     "id": "09-sla-support#Availability commitment",
+     "score": 0.6673479033781884
+    },
+    {
+     "id": "07-business-continuity#High availability",
+     "score": 0.6586148988777173
+    }
+   ],
+   "model": "ministral-14b-2512",
+   "usage": {
+    "inputTokens": 944,
+    "outputTokens": 69
+   },
+   "latencyMs": 960,
+   "cached": false,
+   "status": "answered",
+   "answer": "For Vantrel Plan, our Recovery Point Objective (RPO) is 1 hour and our Recovery Time Objective (RTO) is 4 hours in the event of a major incident affecting an entire AWS region.",
+   "citations": [
+    {
+     "id": "07-business-continuity#Objectives",
+     "doc": "07-business-continuity",
+     "docTitle": "Business Continuity and Disaster Recovery",
+     "section": "Objectives",
+     "excerpt": "Vantrel maintains a Business Continuity Plan (BCP) and a Disaster Recovery Plan (DRP) for Vantrel Plan. In the event of a major incident affecting an entire AWS region, the objectives are:\n\n- **Recovery Point Objective (RPO)**: 1 hour.\n- **Recovery Time Objective (RTO)**: 4 hours."
+    }
+   ],
+   "conflict": false,
+   "warnings": []
+  },
+  "is sms-based two-factor authentication supported?": {
+   "question": "Is SMS-based two-factor authentication supported?",
+   "consulted": [
+    {
+     "id": "04-identity-access#Customer authentication",
+     "score": 0.6499816079448036
+    },
+    {
+     "id": "12-product-faq#Does Vantrel Plan have an API?",
+     "score": 0.6060176177435765
+    },
+    {
+     "id": "04-identity-access#Vantrel employee access to customer data",
+     "score": 0.604492592167143
+    },
+    {
+     "id": "04-identity-access#User provisioning",
+     "score": 0.6018761086144379
+    },
+    {
+     "id": "03-infrastructure-hosting#Logging and monitoring",
+     "score": 0.599816747881528
+    }
+   ],
+   "model": "ministral-14b-2512",
+   "usage": {
+    "inputTokens": 1021,
+    "outputTokens": 62
+   },
+   "latencyMs": 848,
+   "cached": false,
+   "status": "answered",
+   "answer": "No, Vantrel does not support SMS-based multi-factor authentication. Only TOTP authenticator apps or FIDO2/WebAuthn security keys are supported for MFA.",
+   "citations": [
+    {
+     "id": "04-identity-access#Customer authentication",
+     "doc": "04-identity-access",
+     "docTitle": "Identity and Access Management",
+     "section": "Customer authentication",
+     "excerpt": "Vantrel Plan supports the following authentication methods for customer users:\n\n- **Email and password**: passwords must contain at least 12 characters and are checked against known breached password lists. Passwords are hashed with Argon2id.\n- **Multi-factor authentication (MFA)**: users can enable MFA using a TOTP authenticator app or a FIDO2/WebAuthn security key. Administrators can make MFA mandatory for all users of their workspace. SMS-based MFA is not supported.\n- **Single Sign-On (SSO)**: SAML 2.0 and OpenID Connect (OIDC) are supported on Business and Enterprise plans. Tested identity providers include Microsoft Entra ID, Okta and Google Workspace. When SSO is enforced, password login is disabled for the workspace.\n\nSessions expire after 12 hours by default. Workspace administrators can configure a shorter session timeout."
+    }
+   ],
+   "conflict": false,
+   "warnings": []
+  },
+  "do you have a bug bounty program, and what are the reward amounts?": {
+   "question": "Do you have a bug bounty program, and what are the reward amounts?",
+   "consulted": [
+    {
+     "id": "08-incident-response#Reporting a vulnerability",
+     "score": 0.6743454441376227
+    },
+    {
+     "id": "10-vulnerability-management#Penetration testing",
+     "score": 0.6257602629068755
+    },
+    {
+     "id": "10-vulnerability-management#Vulnerability management",
+     "score": 0.6245547091688096
+    },
+    {
+     "id": "08-incident-response#Incident response plan",
+     "score": 0.612572281930661
+    },
+    {
+     "id": "02-security-whitepaper#Security program overview",
+     "score": 0.6105638532463331
+    }
+   ],
+   "model": "ministral-14b-2512",
+   "usage": {
+    "inputTokens": 974,
+    "outputTokens": 49
+   },
+   "latencyMs": 882,
+   "cached": false,
+   "status": "partial",
+   "answer": "Vantrel operates a private bug bounty program with invited researchers. The documentation does not specify reward amounts for reported vulnerabilities.",
+   "citations": [
+    {
+     "id": "08-incident-response#Reporting a vulnerability",
+     "doc": "08-incident-response",
+     "docTitle": "Incident Response",
+     "section": "Reporting a vulnerability",
+     "excerpt": "Security researchers and customers can report vulnerabilities to security@vantrel.example. Vantrel also runs a private bug bounty program with invited researchers. Vantrel commits to acknowledging vulnerability reports within 2 business days."
+    }
+   ],
+   "conflict": false,
+   "warnings": []
+  },
+  "is vantrel plan fedramp authorized?": {
+   "question": "Is Vantrel Plan FedRAMP authorized?",
+   "consulted": [
+    {
+     "id": "03-infrastructure-hosting#Cloud provider",
+     "score": 0.7697074027769001
+    },
+    {
+     "id": "12-product-faq#Is Vantrel Plan accessible to users with disabilities?",
+     "score": 0.7581080257784094
+    },
+    {
+     "id": "02-security-whitepaper#Certifications and audit reports",
+     "score": 0.7553896885899264
+    },
+    {
+     "id": "07-business-continuity#Objectives",
+     "score": 0.7450930621806057
+    },
+    {
+     "id": "01-company-overview#Product and delivery model",
+     "score": 0.7434337000452108
+    }
+   ],
+   "model": "ministral-14b-2512",
+   "usage": {
+    "inputTokens": 1079,
+    "outputTokens": 39
+   },
+   "latencyMs": 1467,
+   "cached": false,
+   "status": "not_found",
+   "answer": "The documentation does not mention whether Vantrel Plan is FedRAMP authorized.",
+   "citations": [],
+   "conflict": false,
+   "warnings": []
+  },
+  "can you provide your soc 1 report?": {
+   "question": "Can you provide your SOC 1 report?",
+   "consulted": [
+    {
+     "id": "05-data-processing-agreement#Audits",
+     "score": 0.7341389222093059
+    },
+    {
+     "id": "02-security-whitepaper#Certifications and audit reports",
+     "score": 0.7147655948687243
+    },
+    {
+     "id": "03-infrastructure-hosting#Cloud provider",
+     "score": 0.6876966995997684
+    },
+    {
+     "id": "10-vulnerability-management#Penetration testing",
+     "score": 0.6679075016061926
+    },
+    {
+     "id": "07-business-continuity#Testing",
+     "score": 0.6669274990292555
+    }
+   ],
+   "model": "ministral-14b-2512",
+   "usage": {
+    "inputTokens": 1139,
+    "outputTokens": 34
+   },
+   "latencyMs": 1081,
+   "cached": false,
+   "status": "not_found",
+   "answer": "The documentation does not mention a SOC 1 report.",
+   "citations": [],
+   "conflict": false,
+   "warnings": []
+  },
+  "how long after contract termination is our data deleted?": {
+   "question": "How long after contract termination is our data deleted?",
+   "consulted": [
+    {
+     "id": "02-security-whitepaper#Data retention and deletion",
+     "score": 0.7804716117116435
+    },
+    {
+     "id": "05-data-processing-agreement#Return and deletion of data",
+     "score": 0.771368379493759
+    },
+    {
+     "id": "07-business-continuity#Backups",
+     "score": 0.6567978227819071
+    },
+    {
+     "id": "05-data-processing-agreement#International data transfers",
+     "score": 0.6474717252929213
+    },
+    {
+     "id": "05-data-processing-agreement#Roles of the parties",
+     "score": 0.6401967070855087
+    }
+   ],
+   "model": "ministral-14b-2512",
+   "usage": {
+    "inputTokens": 955,
+    "outputTokens": 132
+   },
+   "latencyMs": 1781,
+   "cached": false,
+   "status": "partial",
+   "answer": "After contract termination, customers have 30 days to export their data. According to the Security Whitepaper (v2026.1), data is permanently deleted from production systems within 90 days of contract termination. However, the Data Processing Agreement (v2025.3) states that deletion occurs within 30 days after the end of the 30-day grace period, meaning a total of 60 days from contract termination. These two sources conflict on the deletion timeline.",
+   "citations": [
+    {
+     "id": "02-security-whitepaper#Data retention and deletion",
+     "doc": "02-security-whitepaper",
+     "docTitle": "Security Whitepaper",
+     "section": "Data retention and deletion",
+     "excerpt": "Customer data is retained for the duration of the subscription. After contract termination, customers have 30 days to export their data. Customer data is then permanently deleted from production systems within **90 days** of contract termination. Backups containing the data expire according to the backup retention schedule."
+    },
+    {
+     "id": "05-data-processing-agreement#Return and deletion of data",
+     "doc": "05-data-processing-agreement",
+     "docTitle": "Data Processing Agreement (summary)",
+     "section": "Return and deletion of data",
+     "excerpt": "At the end of the contract, the customer can export their data at any time during a 30-day grace period. Customer data is then deleted from Vantrel's production systems within **30 days** after the end of the grace period, unless retention is required by law."
+    }
+   ],
+   "conflict": true,
+   "warnings": []
+  },
+  "les données sont-elles hébergées en france ?": {
+   "question": "Les données sont-elles hébergées en France ?",
+   "consulted": [
+    {
+     "id": "03-infrastructure-hosting#Hosting regions",
+     "score": 0.6961765109227481
+    },
+    {
+     "id": "05-data-processing-agreement#International data transfers",
+     "score": 0.6876147313281321
+    },
+    {
+     "id": "06-subprocessors#Infrastructure sub-processors",
+     "score": 0.6734611708019617
+    },
+    {
+     "id": "03-infrastructure-hosting#Logging and monitoring",
+     "score": 0.6697035929049252
+    },
+    {
+     "id": "03-infrastructure-hosting#Cloud provider",
+     "score": 0.6685942843599608
+    }
+   ],
+   "model": "ministral-14b-2512",
+   "usage": {
+    "inputTokens": 1038,
+    "outputTokens": 117
+   },
+   "latencyMs": 1528,
+   "cached": false,
+   "status": "partial",
+   "answer": "Les données des clients hébergés dans la région EU sont stockées dans la région AWS eu-west-3 (Paris, France) pour le site principal, mais les copies de sauvegarde et de reprise après sinistre sont situées dans AWS eu-central-1 (Francfort, Allemagne). Aucune autre région en France n'est actuellement proposée pour l'hébergement des données. La région US n'est pas hébergée en France.",
+   "citations": [
+    {
+     "id": "03-infrastructure-hosting#Hosting regions",
+     "doc": "03-infrastructure-hosting",
+     "docTitle": "Infrastructure and Hosting",
+     "section": "Hosting regions",
+     "excerpt": "Customers choose a hosting region when their tenant is created:\n\n| Region | Primary location | Disaster recovery location |\n|---|---|---|\n| EU (default) | AWS eu-west-3 (Paris, France) | AWS eu-central-1 (Frankfurt, Germany) |\n| US (available since 2024) | AWS us-east-1 (N. Virginia) | AWS us-west-2 (Oregon) |\n\nCustomer data at rest stays within the selected region, including backups and disaster recovery copies. Moving an existing tenant from one region to another is possible on request for Enterprise customers.\n\nNo other hosting regions are currently offered."
+    }
+   ],
+   "conflict": false,
+   "warnings": []
+  },
+  "is customer data encrypted at rest? please specify the algorithm and key management.": {
+   "question": "Is customer data encrypted at rest? Please specify the algorithm and key management.",
+   "consulted": [
+    {
+     "id": "02-security-whitepaper#Encryption",
+     "score": 0.7635271371430548
+    },
+    {
+     "id": "02-security-whitepaper#Tenant isolation",
+     "score": 0.6846686226150765
+    },
+    {
+     "id": "03-infrastructure-hosting#Cloud provider",
+     "score": 0.6704350589505795
+    },
+    {
+     "id": "02-security-whitepaper#Data retention and deletion",
+     "score": 0.6681224381350575
+    },
+    {
+     "id": "04-identity-access#Vantrel employee access to customer data",
+     "score": 0.6657773204258305
+    }
+   ],
+   "model": "ministral-14b-2512",
+   "usage": {
+    "inputTokens": 1040,
+    "outputTokens": 92
+   },
+   "latencyMs": 1469,
+   "cached": false,
+   "status": "answered",
+   "answer": "Yes, customer data stored in databases, file storage, and backups is encrypted at rest using AES-256. Keys are managed in AWS Key Management Service (KMS) and rotated automatically every year. Enterprise customers can provide and control their own encryption keys through AWS KMS (Bring Your Own Key, BYOK).",
+   "citations": [
+    {
+     "id": "02-security-whitepaper#Encryption",
+     "doc": "02-security-whitepaper",
+     "docTitle": "Security Whitepaper",
+     "section": "Encryption",
+     "excerpt": "- **Data at rest**: all customer data stored in databases, file storage and backups is encrypted using AES-256, with keys managed in AWS Key Management Service (KMS). Keys are rotated automatically every year.\n- **Data in transit**: all connections to Vantrel Plan use TLS 1.2 or higher. TLS 1.3 is preferred and negotiated whenever the client supports it. Older protocols (SSL, TLS 1.0 and 1.1) are disabled. HTTP Strict Transport Security (HSTS) is enforced.\n- **Customer-managed keys (BYOK)**: Enterprise customers can provide and control their own encryption key through AWS KMS. Revoking the key makes the customer's data unreadable by Vantrel."
+    }
+   ],
+   "conflict": false,
+   "warnings": []
+  },
+  "which tls versions are supported for data in transit?": {
+   "question": "Which TLS versions are supported for data in transit?",
+   "consulted": [
+    {
+     "id": "02-security-whitepaper#Encryption",
+     "score": 0.7053948254163713
+    },
+    {
+     "id": "05-data-processing-agreement#International data transfers",
+     "score": 0.6351776193406342
+    },
+    {
+     "id": "03-infrastructure-hosting#Logging and monitoring",
+     "score": 0.6267609339649592
+    },
+    {
+     "id": "06-subprocessors#Infrastructure sub-processors",
+     "score": 0.6231104633096592
+    },
+    {
+     "id": "03-infrastructure-hosting#Cloud provider",
+     "score": 0.6217608967136643
+    }
+   ],
+   "model": "ministral-14b-2512",
+   "usage": {
+    "inputTokens": 1056,
+    "outputTokens": 73
+   },
+   "latencyMs": 1116,
+   "cached": false,
+   "status": "answered",
+   "answer": "Vantrel supports TLS 1.2 or higher for data in transit. TLS 1.3 is preferred and negotiated when the client supports it. SSL, TLS 1.0, and TLS 1.1 are disabled.",
+   "citations": [
+    {
+     "id": "02-security-whitepaper#Encryption",
+     "doc": "02-security-whitepaper",
+     "docTitle": "Security Whitepaper",
+     "section": "Encryption",
+     "excerpt": "- **Data at rest**: all customer data stored in databases, file storage and backups is encrypted using AES-256, with keys managed in AWS Key Management Service (KMS). Keys are rotated automatically every year.\n- **Data in transit**: all connections to Vantrel Plan use TLS 1.2 or higher. TLS 1.3 is preferred and negotiated whenever the client supports it. Older protocols (SSL, TLS 1.0 and 1.1) are disabled. HTTP Strict Transport Security (HSTS) is enforced.\n- **Customer-managed keys (BYOK)**: Enterprise customers can provide and control their own encryption key through AWS KMS. Revoking the key makes the customer's data unreadable by Vantrel."
+    }
+   ],
+   "conflict": false,
+   "warnings": []
+  },
+  "can you provide your soc 2 type ii report?": {
+   "question": "Can you provide your SOC 2 Type II report?",
+   "consulted": [
+    {
+     "id": "02-security-whitepaper#Certifications and audit reports",
+     "score": 0.7232561056885352
+    },
+    {
+     "id": "05-data-processing-agreement#Audits",
+     "score": 0.7176374366055427
+    },
+    {
+     "id": "03-infrastructure-hosting#Cloud provider",
+     "score": 0.6702423979211005
+    },
+    {
+     "id": "03-infrastructure-hosting#Logging and monitoring",
+     "score": 0.6693085167667115
+    },
+    {
+     "id": "07-business-continuity#Testing",
+     "score": 0.6643285426970923
+    }
+   ],
+   "model": "ministral-14b-2512",
+   "usage": {
+    "inputTokens": 1043,
+    "outputTokens": 117
+   },
+   "latencyMs": 2094,
+   "cached": false,
+   "status": "partial",
+   "answer": "Vantrel’s SOC 2 Type II report is available upon request to security@vantrel.example under a non-disclosure agreement (NDA). The report covers the Security, Availability, and Confidentiality Trust Services Criteria and is typically released in March of the year following the audit period (January 1 to December 31). The report can be shared with customers and prospects, but the specific document itself is not provided in the excerpts.",
+   "citations": [
+    {
+     "id": "02-security-whitepaper#Certifications and audit reports",
+     "doc": "02-security-whitepaper",
+     "docTitle": "Security Whitepaper",
+     "section": "Certifications and audit reports",
+     "excerpt": "- **ISO/IEC 27001:2022**: Vantrel has been certified since September 2023. The certificate covers the development, operation and support of Vantrel Plan. Surveillance audits are performed annually by an accredited certification body.\n- **SOC 2 Type II**: Vantrel undergoes an annual SOC 2 Type II examination covering the Security, Availability and Confidentiality Trust Services Criteria. The audit period runs from January 1 to December 31, and the report is usually available in March of the following year.\n\nThe SOC 2 Type II report and the ISO 27001 certificate can be shared with customers and prospects under a non-disclosure agreement (NDA), on request to security@vantrel.example.\n\nVantrel does not store, process or transmit payment card data: subscription payments are handled by Stripe. PCI DSS certification is therefore not applicable to Vantrel Plan."
+    }
+   ],
+   "conflict": false,
+   "warnings": []
+  },
+  "please list your sub-processors.": {
+   "question": "Please list your sub-processors.",
+   "consulted": [
+    {
+     "id": "06-subprocessors#Infrastructure sub-processors",
+     "score": 0.7860475741519012
+    },
+    {
+     "id": "06-subprocessors#Service sub-processors",
+     "score": 0.7776999748088395
+    },
+    {
+     "id": "05-data-processing-agreement#Sub-processors",
+     "score": 0.7568696057275524
+    },
+    {
+     "id": "06-subprocessors#Notes",
+     "score": 0.7524776293157198
+    },
+    {
+     "id": "05-data-processing-agreement#International data transfers",
+     "score": 0.68051473735469
+    }
+   ],
+   "model": "ministral-14b-2512",
+   "usage": {
+    "inputTokens": 959,
+    "outputTokens": 237
+   },
+   "latencyMs": 2719,
+   "cached": false,
+   "status": "answered",
+   "answer": "Vantrel’s sub-processors are listed in the Sub-processors document (v2026.2) and include the following: Amazon Web Services EMEA SARL for cloud hosting, storage, and backups in the customer-selected region (EU or US); Cloudflare, Inc. for CDN, Web Application Firewall, and DDoS protection on a global edge network (traffic in transit only); Datadog, Inc. for infrastructure and application monitoring and logs in EU (for EU tenants) or US (for US tenants); Stripe Payments Europe, Ltd. for billing and subscription payments in EU/US; Zendesk, Inc. for customer support ticketing in EU; SendGrid (Twilio Inc.) for transactional emails in US; and Microsoft Ireland Operations Ltd. (Azure OpenAI Service) for AI features (Vantrel Assist) in the EU Data Zone, used only when the customer has enabled Vantrel Assist.",
+   "citations": [
+    {
+     "id": "06-subprocessors#Infrastructure sub-processors",
+     "doc": "06-subprocessors",
+     "docTitle": "Sub-processors",
+     "section": "Infrastructure sub-processors",
+     "excerpt": "| Sub-processor | Purpose | Data location |\n|---|---|---|\n| Amazon Web Services EMEA SARL | Cloud hosting, storage, backups | Region selected by the customer (EU or US) |\n| Cloudflare, Inc. | CDN, Web Application Firewall, DDoS protection | Global edge network (traffic in transit only) |\n| Datadog, Inc. | Infrastructure and application monitoring, logs | EU (for EU tenants), US (for US tenants) |"
+    },
+    {
+     "id": "06-subprocessors#Service sub-processors",
+     "doc": "06-subprocessors",
+     "docTitle": "Sub-processors",
+     "section": "Service sub-processors",
+     "excerpt": "| Sub-processor | Purpose | Data location |\n|---|---|---|\n| Stripe Payments Europe, Ltd. | Billing and subscription payments | EU / US |\n| Zendesk, Inc. | Customer support ticketing | EU |\n| SendGrid (Twilio Inc.) | Transactional emails (notifications, password resets) | US |\n| Microsoft Ireland Operations Ltd. (Azure OpenAI Service) | AI features (Vantrel Assist) | EU Data Zone |"
+    },
+    {
+     "id": "06-subprocessors#Notes",
+     "doc": "06-subprocessors",
+     "docTitle": "Sub-processors",
+     "section": "Notes",
+     "excerpt": "- SendGrid only processes user email addresses and the content of transactional notifications. It does not process data from customer models.\n- Microsoft Azure OpenAI Service is only used when the customer has enabled Vantrel Assist (see the AI Features Policy)."
+    }
+   ],
+   "conflict": false,
+   "warnings": []
+  },
+  "what is the coverage amount of your cyber insurance policy?": {
+   "question": "What is the coverage amount of your cyber insurance policy?",
+   "consulted": [
+    {
+     "id": "08-incident-response#Incident response plan",
+     "score": 0.6067652095677417
+    },
+    {
+     "id": "08-incident-response#Reporting a vulnerability",
+     "score": 0.5912343907850849
+    },
+    {
+     "id": "08-incident-response#Customer communication",
+     "score": 0.5902830332459458
+    },
+    {
+     "id": "10-vulnerability-management#Penetration testing",
+     "score": 0.588751968578934
+    },
+    {
+     "id": "10-vulnerability-management#Vulnerability management",
+     "score": 0.5883140419034116
+    }
+   ],
+   "model": "ministral-14b-2512",
+   "usage": {
+    "inputTokens": 1014,
+    "outputTokens": 37
+   },
+   "latencyMs": 638,
+   "cached": false,
+   "status": "not_found",
+   "answer": "The coverage amount of our cyber insurance policy is not in the documentation.",
+   "citations": [],
+   "conflict": false,
+   "warnings": []
+  }
+ }
+}
