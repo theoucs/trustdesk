@@ -392,12 +392,13 @@ Next.js 16 (App Router) + Tailwind, même stack que metarenastats. Design volont
 
 | Page | Contenu |
 |---|---|
-| `/` Questionnaire | Coller des questions (une par ligne) ou charger un questionnaire exemple → tableau qui se remplit ligne par ligne : réponse, statut coloré, sources dépliables (extrait + lien vers le document), sections consultées si non trouvé. Export CSV. |
+| `/` Questionnaire | **Importer un questionnaire Excel/CSV** (bouton ou glisser-déposer ; un questionnaire exemple `.xlsx` est téléchargeable) ou coller des questions → tableau qui se remplit ligne par ligne : réponse, statut coloré, sources dépliables (extrait + lien vers le document), sections consultées si non trouvé. **Export Excel** du questionnaire rempli. |
 | `/knowledge` | Les 12 documents, versions, propriétaires. Chaque section a une ancre : les citations y renvoient directement et la section est surlignée. |
 | `/evaluation` (« Quality ») | Scores du réglage actuel, matrice modèle × juge, historique des runs ; détail par run avec, pour chaque question, réponse, référence, notes et raisonnement du juge. |
 
 Choix techniques :
 
+- **Import de fichiers, tout dans le navigateur** (`src/lib/questionnaire-file.ts`) : un vrai questionnaire n'est pas une liste propre, c'est un tableur avec un bandeau titre, une colonne ID, une colonne domaine, une colonne réponse vide. L'outil cherche la colonne des questions (en-tête du type « Question », sinon la colonne avec le plus de textes longs finissant par « ? »). Le fichier ne quitte pas le navigateur ; seules les questions sont envoyées au serveur. Les bibliothèques Excel ne sont chargées qu'au moment de l'import/export.
 - **Une route API** `POST /api/answer` appelle exactement le même `answerQuestion()` que les scripts d'évaluation.
 - **Questions traitées une par une** côté navigateur : les quotas gratuits l'imposent, et l'utilisateur voit le tableau se remplir au lieu d'attendre 1 minute devant un spinner.
 - **Les clés API ne quittent jamais le serveur** (pas de préfixe `NEXT_PUBLIC_`).

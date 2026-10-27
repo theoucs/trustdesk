@@ -22,20 +22,35 @@ const SAMPLE = [
 const MAX_QUESTIONS = 20;
 
 /** Excerpts are stored as markdown; show them as readable plain text. */
-const plainText = (md: string) => md.replace(/\*\*/g, "").replace(/^\|?\s*-{3,}.*$/gm, "").replace(/\|/g, "  ");
+const plainText = (md: string) =>
+  md
+    .replace(/\*\*/g, "")
+    .replace(/^\|?\s*-{3,}.*$/gm, "")
+    .replace(/\|/g, "  ");
 
 const MODELS = [
   { value: "mistral", label: "Mistral — Ministral 14B" },
   { value: "gemini", label: "Google — Gemini 3.5 Flash-Lite" },
 ] as const;
 
-type Row = { question: string; state: "queued" | "running" | "done" | "error"; answer?: Answer; error?: string };
+type Row = {
+  question: string;
+  state: "queued" | "running" | "done" | "error";
+  answer?: Answer;
+  error?: string;
+};
 
 export function Questionnaire() {
   const [input, setInput] = useState("");
   const [generator, setGenerator] = useState<"mistral" | "gemini">("mistral");
   const [rows, setRows] = useState<Row[]>([]);
   const [running, setRunning] = useState(false);
+  const [notice, setNotice] = useState<{
+    kind: "ok" | "error";
+    text: string;
+  }>();
+  const [dragging, setDragging] = useState(false);
+  const fileInput = useRef<HTMLInputElement>(null);
   const cancelled = useRef(false);
 
   const questions = input
@@ -69,25 +84,31 @@ export function Questionnaire() {
     setRunning(false);
   }
 
-  function exportCsv() {
-    const esc = (s: string) => `"${s.replace(/"/g, '""')}"`;
-    const lines = [
-      ["Question", "Answer", "Status", "Sources"].map(esc).join(","),
-      ...rows.map((r) =>
-        [
-          r.question,
-          r.answer?.answer ?? r.error ?? "",
-          r.answer?.status ?? r.state,
-          (r.answer?.citations ?? []).map((c) => `${c.docTitle} > ${c.section}`).join("; "),
-        ]
-          .map(esc)
-          .join(","),
-      ),
-    ];
-    const url = URL.createObjectURL(new Blob([lines.join("\n")], { type: "text/csv;charset=utf-8" }));
-    const a = Object.assign(document.createElement("a"), { href: url, download: "vantrel-questionnaire.csv" });
-    a.click();
-    URL.revokeObjectURL(url);
+  async function importFile(file: File | undefined) {
+    if (!file) return;
+    setNotice(undefined);
+    try {
+      // Loaded on demand: the spreadsheet libraries are only needed when someone imports or exports a file.
+      const { importQuestionnaire } = await import("@/lib/questionnaire-file");
+      const { questions: found, detail } = await importQuestionnaire(file);
+      if (!found.length) throw new Error("No questions found in this file.");
+      setInput(found.join("\n"));
+      setRows([]);
+      setNotice({
+        kind: "ok",
+        text: `Imported ${found.length} questions from ${file.name} (${detail}). Review them below, then draft.`,
+      });
+    } catch (e) {
+      setNotice({
+        kind: "error",
+        text: e instanceof Error ? e.message : "Could not read this file.",
+      });
+    }
+  }
+
+  async function exportXlsx() {
+    const { exportQuestionnaire } = await import("@/lib/questionnaire-file");
+    await exportQuestionnaire(rows);
   }
 
   const counts = rows.reduce(
@@ -104,23 +125,79 @@ export function Questionnaire() {
       <section className="rounded-md border border-border bg-surface">
         <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border px-4 py-2.5">
           <span className="text-[13px] font-medium">Questions</span>
-          <button
-            type="button"
-            onClick={() => setInput(SAMPLE)}
-            className="text-[13px] text-accent hover:underline disabled:opacity-50"
-            disabled={running}
-          >
-            Load sample questionnaire
-          </button>
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[13px]">
+            <button
+              type="button"
+              onClick={() => fileInput.current?.click()}
+              className="rounded border border-border-strong px-2.5 py-1 hover:bg-surface-muted disabled:opacity-50"
+              disabled={running}
+            >
+              Import file…
+            </button>
+            <input
+              ref={fileInput}
+              type="file"
+              accept=".xlsx,.csv,.txt"
+              className="hidden"
+              onChange={(e) => {
+                importFile(e.target.files?.[0]);
+                e.target.value = "";
+              }}
+            />
+            <button
+              type="button"
+              onClick={() => {
+                setInput(SAMPLE);
+                setNotice(undefined);
+              }}
+              className="text-accent hover:underline disabled:opacity-50"
+              disabled={running}
+            >
+              Load sample questions
+            </button>
+          </div>
         </div>
-        <textarea
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          placeholder={"Do you encrypt customer data at rest?\nWhere is customer data hosted?\n…"}
-          rows={8}
-          className="block w-full resize-y bg-transparent px-4 py-3 font-mono text-[13px] leading-6 outline-none placeholder:text-muted/60"
-          disabled={running}
-        />
+        {notice && (
+          <p
+            className={`border-b border-border px-4 py-2 text-[13px] ${notice.kind === "ok" ? "bg-ok-soft text-ok" : "bg-bad-soft text-bad"}`}
+          >
+            {notice.text}
+          </p>
+        )}
+        <div
+          className={`relative ${dragging ? "bg-accent-soft" : ""}`}
+          onDragOver={(e) => {
+            e.preventDefault();
+            if (!running) setDragging(true);
+          }}
+          onDragLeave={() => setDragging(false)}
+          onDrop={(e) => {
+            e.preventDefault();
+            setDragging(false);
+            if (!running) importFile(e.dataTransfer.files?.[0]);
+          }}
+        >
+          {dragging && (
+            <div className="pointer-events-none absolute inset-2 grid place-items-center rounded border-2 border-dashed border-accent text-[13px] font-medium text-accent">
+              Drop your questionnaire (.xlsx, .csv or .txt)
+            </div>
+          )}
+          <textarea
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            placeholder={"Do you encrypt customer data at rest?\nWhere is customer data hosted?\n…"}
+            rows={8}
+            className="block w-full resize-y bg-transparent px-4 py-3 font-mono text-[13px] leading-6 outline-none placeholder:text-muted/60"
+            disabled={running}
+          />
+        </div>
+        <p className="border-t border-border px-4 py-2 text-xs text-muted">
+          Paste questions, drop an Excel/CSV questionnaire on this box, or{" "}
+          <a href="/samples/vantrel-security-questionnaire.xlsx" download className="text-accent hover:underline">
+            download a sample questionnaire (.xlsx)
+          </a>{" "}
+          to try the import.
+        </p>
         <div className="flex flex-wrap items-center gap-3 border-t border-border px-4 py-3">
           <label className="flex items-center gap-2 text-[13px] text-muted">
             Drafting model
@@ -175,11 +252,11 @@ export function Questionnaire() {
             {counts.needs_review > 0 && <span className="text-bad">{counts.needs_review} need review</span>}
             <button
               type="button"
-              onClick={exportCsv}
+              onClick={exportXlsx}
               disabled={running}
               className="ml-auto text-accent hover:underline disabled:opacity-50"
             >
-              Export CSV
+              Export to Excel
             </button>
           </div>
           <ol className="divide-y divide-border">
@@ -221,7 +298,11 @@ function AnswerRow({ index, row }: { index: number; row: Row }) {
                       </summary>
                       <div className="mt-1.5 rounded border border-border bg-surface-muted px-3 py-2 text-[13px] text-muted">
                         <p className="line-clamp-6 whitespace-pre-line">{plainText(c.excerpt)}</p>
-                        <a className="mt-1 inline-block text-accent hover:underline" href={citationHref(c.id)} target="_blank">
+                        <a
+                          className="mt-1 inline-block text-accent hover:underline"
+                          href={citationHref(c.id)}
+                          target="_blank"
+                        >
                           Open in knowledge base ↗
                         </a>
                       </div>
@@ -232,7 +313,11 @@ function AnswerRow({ index, row }: { index: number; row: Row }) {
             )}
             {a.status === "not_found" && (
               <p className="text-xs text-muted">
-                Checked: {a.consulted.slice(0, 3).map((c) => chunkLabel(c.id)).join(" · ")}
+                Checked:{" "}
+                {a.consulted
+                  .slice(0, 3)
+                  .map((c) => chunkLabel(c.id))
+                  .join(" · ")}
               </p>
             )}
             {a.warnings.length > 0 && <p className="text-xs text-bad">{a.warnings.join(" · ")}</p>}
