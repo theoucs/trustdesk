@@ -298,7 +298,22 @@ Un LLM tend à **mieux noter les textes qui lui ressemblent** (biais d'auto-pré
 - le score « officiel » de chaque modèle est donné par **l'autre** modèle (Mistral jugé par Gemini, Gemini jugé par Mistral) ;
 - on calcule aussi la **matrice complète** : chaque jeu de réponses (rédigé une seule fois, grâce au cache) est noté par les deux juges. Si un juge note son propre modèle plus haut que ne le fait l'autre juge, l'écart mesure le biais.
 
-⏳ *Résultats de la matrice v1 : section 7.5 (complétée à la fin des runs).*
+**Résultats (prompt v1, 50 questions) :**
+
+| | Jugé par Mistral | Jugé par Gemini |
+|---|---|---|
+| **Rédigé par Mistral** (Ministral 14B) | 87,1 | 96,1 |
+| **Rédigé par Gemini** (3.5 Flash-Lite) | 88,4 | 95,1 |
+
+Trois lectures, toutes contre-intuitives — c'est le cœur du deep dive :
+
+1. **La sévérité du juge pèse 8 points ; l'écart entre modèles, ~1 point.** Ministral juge beaucoup plus durement que Gemini (y compris ses propres réponses). Conséquence pratique : **on ne compare deux scores que s'ils viennent du même juge** (lire la matrice par colonne). Comparer « Mistral jugé par Gemini » (96,1) à « Gemini jugé par Mistral » (88,4) — ce que le plan initial « croisé » aurait fait — aurait conclu à tort que Mistral est bien meilleur.
+2. **Pas d'auto-préférence détectée** : chaque juge note l'autre modèle un peu *plus haut* que le sien. Le biais existe dans la littérature, mais il n'est pas visible ici — on l'a mesuré au lieu de le supposer. (Avec 50 questions, 1 point d'écart reste dans le bruit.)
+3. **Le score global masque la différence qui compte.** À score quasi égal (moyenne des deux juges : Mistral 91,6, Gemini 91,8), les métriques déterministes montrent que **Gemini répond à 2 des 12 questions non documentées (17 %), Mistral à 1 (8 %)**. Pour un questionnaire de sécurité, c'est le chiffre décisif.
+
+**Choix d'affichage dans l'app** : le score de chaque modèle est la **moyenne des deux juges**. Chaque modèle est ainsi noté une fois par lui-même et une fois par l'autre : le biais d'auto-préférence et la sévérité s'appliquent symétriquement. Les métriques déterministes sont affichées à côté, au même niveau.
+
+**Le juge Ministral 14B est-il fiable ?** Lecture manuelle de ses raisonnements : il pénalise des détails corrects *en plus* de la référence (BYOK mentionné en q01 → 3/5, alors que la grille dit de ne pas le faire), et il a donné 95/100 à une réponse qui affirme un fait non documenté (SOC 1). Un petit modèle suit moins bien une grille de notation longue. → C'est pour trancher ce genre de question qu'existe `npm run calibrate` (section 7.6).
 
 ### 7.4 Le juge n'est pas infaillible : un exemple réel
 
@@ -324,6 +339,12 @@ Méthode : lire les réponses les moins bien notées du run v1, classer les erre
 | « Non documenté » alors que ça l'est | q24 : accès bastion des employés | **recherche** : la bonne section n'était pas dans les 5 extraits | pas un problème de prompt → test séparé avec k = 8 |
 
 ⏳ *Résultats v1 → v2 → v2 k=8 : complétés à la fin des runs.*
+
+### 7.6 Calibrer le juge contre un humain — `npm run calibrate`
+
+Un juge LLM est un instrument de mesure : avant de lui faire confiance, on vérifie qu'il est d'accord avec un expert. Le script présente une quinzaine de réponses (en priorité celles où **les deux juges ne sont pas d'accord**) et pose une seule question, binaire et métier : **« Cette réponse peut-elle partir au client telle quelle ? »**. Puis il calcule, pour chaque juge, le **taux d'accord** avec l'humain, et s'il se trompe plutôt par **indulgence** (laisse passer une mauvaise réponse — le défaut dangereux) ou par **sévérité**.
+
+Les notes humaines sont stockées dans `eval/human-labels.jsonl`, indexées par (question, texte exact de la réponse) : elles restent valables pour tous les futurs runs qui produisent la même réponse.
 
 ---
 

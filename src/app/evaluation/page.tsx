@@ -25,8 +25,15 @@ export default function EvaluationPage() {
   const full = runs.filter((r) => r.summary.n === Math.max(...runs.map((x) => x.summary.n)));
   const cell = (g: string, j: string, prompt = latestPrompt): RunInfo | undefined =>
     full.find((r) => r.config.generator.provider === g && r.config.judge.provider === j && r.config.answer.promptVersion === prompt);
-  // "Headline" run: each model judged by the other one, to avoid self-preference.
-  const cross = PROVIDERS.map((g) => cell(g, g === "mistral" ? "gemini" : "mistral")).filter(Boolean) as RunInfo[];
+  // Headline: each model's score is the mean of BOTH graders. Each model is graded once by itself and once by the
+  // other, so self-preference and grader strictness weigh equally on both. Deterministic metrics don't depend on the
+  // grader (the answers are the same, from cache), so they are read from either run.
+  const headline = PROVIDERS.flatMap((g) => {
+    const graded = PROVIDERS.map((j) => cell(g, j)).filter((r): r is RunInfo => Boolean(r));
+    if (!graded.length) return [];
+    const score = graded.reduce((sum, r) => sum + r.summary.globalScore, 0) / graded.length;
+    return [{ generator: g, graded, score, base: graded[0] }];
+  });
 
   return (
     <div className="space-y-8">
@@ -41,15 +48,15 @@ export default function EvaluationPage() {
 
       {runs.length === 0 && <p className="text-muted">No evaluation run yet.</p>}
 
-      {cross.length > 0 && (
+      {headline.length > 0 && (
         <section className="space-y-3">
           <h2 className="font-semibold">Current configuration · prompt {latestPrompt}</h2>
           <div className="grid gap-4 lg:grid-cols-2">
-            {cross.map((r) => (
-              <div key={r.id} className="space-y-3 rounded-md border border-border bg-surface-muted p-4">
+            {headline.map(({ generator, graded, score, base: r }) => (
+              <div key={generator} className="space-y-3 rounded-md border border-border bg-surface-muted p-4">
                 <div className="flex items-baseline justify-between gap-2">
                   <p className="font-medium">
-                    {NAMES[r.config.generator.provider]}{" "}
+                    {NAMES[generator]}{" "}
                     <span className="font-mono text-xs text-muted">{r.config.generator.served.join(", ")}</span>
                   </p>
                   <Link href={`/evaluation/${r.id}`} className="text-[13px] text-accent hover:underline">
@@ -57,7 +64,11 @@ export default function EvaluationPage() {
                   </Link>
                 </div>
                 <div className="grid grid-cols-2 gap-3">
-                  <Metric label="Overall score" value={`${r.summary.globalScore.toFixed(1)}`} hint={`/100 · graded by ${NAMES[r.config.judge.provider]}`} />
+                  <Metric
+                    label="Overall score"
+                    value={score.toFixed(1)}
+                    hint={graded.length === 2 ? "/100 · mean of both graders" : `/100 · graded by ${NAMES[r.config.judge.provider]}`}
+                  />
                   <Metric label="Invented answers" value={pct(r.summary.hallucinationRate)} hint="on questions the docs don't answer" />
                   <Metric label="Missed answers" value={pct(r.summary.falseAbstentionRate)} hint="said “not documented” wrongly" />
                   <Metric label="Expected sources cited" value={pct(r.summary.citationRecall)} hint={`${r.summary.unsourcedBlocked} unsourced answer(s) blocked`} />
@@ -72,9 +83,9 @@ export default function EvaluationPage() {
         <section key={prompt} className="space-y-3">
           <h2 className="font-semibold">Model × grader matrix · prompt {prompt}</h2>
           <p className="max-w-3xl text-[13px] text-muted">
-            Each model drafts all answers once; each answer set is then graded by both models. If a grader scores its
-            own model higher than the other grader does, that gap is self-preference bias — which is why the headline
-            numbers above use cross-grading.
+            Each model drafts all answers once; each answer set is then graded by both models. Compare scores within a
+            column: graders differ in strictness, so a score is only comparable with another score from the same grader.
+            A grader that rates its own model higher than the other grader does shows self-preference.
           </p>
           <div className="overflow-x-auto">
             <table className="min-w-[420px] border-collapse text-[13px]">

@@ -1,0 +1,61 @@
+{
+  "n": 50,
+  "globalScore": 95.1,
+  "judge": {
+    "correctness": 4.8,
+    "faithfulness": 4.96,
+    "completeness": 4.58
+  },
+  "hallucinationRate": 0.16666666666666666,
+  "abstentionRecall": 0.8333333333333334,
+  "falseAbstentionRate": 0,
+  "citationRecall": 0.9780701754385966,
+  "citationPrecision": 0.9557017543859648,
+  "conflictDetected": 1,
+  "unsourcedBlocked": 0,
+  "byCategory": {
+    "direct": {
+      "n": 15,
+      "score": 96.5
+    },
+    "paraphrase": {
+      "n": 6,
+      "score": 94.16666666666667
+    },
+    "multi_doc": {
+      "n": 5,
+      "score": 87.5
+    },
+    "partial": {
+      "n": 4,
+      "score": 97.5
+    },
+    "negative": {
+      "n": 5,
+      "score": 100
+    },
+    "unanswerable": {
+      "n": 6,
+      "score": 100
+    },
+    "trap": {
+      "n": 5,
+      "score": 83
+    },
+    "conflict": {
+      "n": 1,
+      "score": 100
+    },
+    "french": {
+      "n": 3,
+      "score": 100
+    }
+  },
+  "tokens": {
+    "generatorIn": 44294,
+    "generatorOut": 3853,
+    "judgeIn": 30656,
+    "judgeOut": 4304
+  },
+  "avgLatencyMs": 3696.52
+}

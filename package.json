@@ -13,7 +13,8 @@
     "ask": "tsx scripts/ask.ts",
     "eval": "tsx scripts/eval.ts",
     "compare": "tsx scripts/compare.ts",
-    "screenshot": "tsx scripts/screenshot.ts"
+    "screenshot": "tsx scripts/screenshot.ts",
+    "calibrate": "tsx scripts/calibrate.ts"
   },
   "dependencies": {
     "marked": "^18.1.2",
