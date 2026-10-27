@@ -10,6 +10,8 @@ import { existsSync, readdirSync, readFileSync } from "node:fs";
 import path from "node:path";
 import type { RunConfig } from "../src/lib/data/runs";
 import type { QuestionResult, Summary } from "../src/lib/eval/metrics";
+import { DEFAULT_ANSWER_CONFIG } from "../src/lib/rag/answer";
+import { DEFAULT_RETRIEVAL } from "../src/lib/rag/retrieve";
 
 type Run = { id: string; config: RunConfig; summary: Summary };
 
@@ -48,7 +50,14 @@ if (args[0] === "--diff") {
   }
 } else if (args[0] === "--matrix") {
   const prompt = args[1] ?? "v1";
-  const full = runs.filter((r) => r.config.answer.promptVersion === prompt && r.summary.n === Math.max(...runs.map((x) => x.summary.n)));
+  // Même périmètre que la page Quality : jeu complet et réglages de recherche de production (pas les essais k=8).
+  const full = runs.filter(
+    (r) =>
+      r.config.answer.promptVersion === prompt &&
+      r.summary.n === Math.max(...runs.map((x) => x.summary.n)) &&
+      r.config.answer.topK === DEFAULT_ANSWER_CONFIG.topK &&
+      r.config.retrieval.mode === DEFAULT_RETRIEVAL.mode,
+  );
   const latest = (g: string, j: string) =>
     full.filter((r) => r.config.generator.provider === g && r.config.judge.provider === j).at(-1);
   const providers = ["mistral", "gemini"];
