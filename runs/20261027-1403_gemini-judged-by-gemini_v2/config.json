@@ -1,0 +1,35 @@
+{
+  "runId": "20261027-1403_gemini-judged-by-gemini_v2",
+  "createdAt": "2026-10-27T14:08:51.676Z",
+  "commit": "e605c2e",
+  "generator": {
+    "provider": "gemini",
+    "requested": "gemini-3.5-flash-lite",
+    "served": [
+      "gemini-3.5-flash-lite"
+    ]
+  },
+  "judge": {
+    "provider": "gemini",
+    "requested": "gemini-3.5-flash-lite",
+    "served": [
+      "gemini-3.5-flash-lite"
+    ],
+    "promptVersion": "j1",
+    "weights": {
+      "correctness": 0.5,
+      "faithfulness": 0.3,
+      "completeness": 0.2
+    }
+  },
+  "retrieval": {
+    "mode": "embedding",
+    "embeddingProvider": "gemini"
+  },
+  "answer": {
+    "topK": 5,
+    "temperature": 0,
+    "promptVersion": "v2"
+  },
+  "questions": 50
+}

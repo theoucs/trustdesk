@@ -362,6 +362,8 @@ Méthode : lire les réponses les moins bien notées du run v1, classer les erre
 
 Le v3 récupère l'Australie, mais les deux modèles retombent dans le piège q44 (MTTR → délais de première réponse). Un modèle de 14 milliards de paramètres a du mal à tenir **deux règles en tension** dans le même prompt (« réponds non quand la doc exclut » / « ne réponds pas quand la doc parle d'autre chose »).
 
+**Résultat final de la v2, avec le juge de référence (Gemini, cf. §7.6)** : Mistral 95,0, Gemini 95,1, aucune réponse inventée pour l'un comme pour l'autre ; « non documenté » à tort : 2 questions sur 38 pour Mistral, 1 pour Gemini. Les deux modèles sont à égalité sur ce cas d'usage : le choix de Mistral par défaut dans l'app tient à sa latence (~1 s, stable, contre 1 à 10 s pour Gemini gratuit), pas à la qualité.
+
 **Décision : prompt v2 en production**, alors que le v3 a le meilleur score du juge pour Mistral. C'est le seul réglage où **aucun des deux modèles n'invente de réponse**. Une fausse abstention coûte une relecture humaine (et l'app affiche les sections consultées pour la faciliter) ; une fausse affirmation peut finir dans un contrat. **On optimise pour l'erreur qui coûte cher, pas pour le score global.** C'est sans doute le message le plus important du projet pour un entretien.
 
 Pistes non explorées (à citer comme « next steps ») : quelques exemples dans le prompt (*few-shot*) pour les cas limites ; un second appel « vérificateur » qui ne relit que les réponses `answered/partial` aux questions de type « avez-vous X ? » ; un modèle plus gros (hors offre gratuite).
