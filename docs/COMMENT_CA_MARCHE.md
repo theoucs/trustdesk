@@ -10,7 +10,7 @@
 - [x] Étape 4 — Clients Mistral / Gemini + génération de réponses sourcées
 - [x] Étape 5 — LLM-as-judge, score global, matrice 2×2, itération de prompt
 - [x] Étape 6 — App web Trustdesk (testée en local) + vitrine tblabs.dev/work/trustdesk (commitée)
-- [ ] Déploiement : repo GitHub, Vercel, DNS (voir §10)
+- [x] Déploiement : https://trustdesk.tblabs.dev (voir §10)
 
 **Commandes utiles**
 
@@ -420,11 +420,11 @@ Choix techniques :
 
 | Élément | Où | Statut |
 |---|---|---|
-| Code | GitHub `theoucs/trustdesk` (privé) | à créer |
-| App | Vercel, projet `trustdesk`, framework Next.js | à créer (lié au repo : chaque push sur `main` redéploie) |
-| Clés API | Vercel → Settings → Environment Variables : `MISTRAL_API_KEY`, `GEMINI_API_KEY` (type *Sensitive*, Production + Preview) | à saisir à la main, jamais dans le code ni dans le chat |
-| Domaine | Vercel → Domains : `trustdesk.tblabs.dev` ; Cloudflare → DNS : `CNAME trustdesk → valeur donnée par Vercel`, **DNS only** (nuage gris, comme metarenastats) | à faire |
-| Vitrine | `tblabs/work/trustdesk/` | commitée, à pousser une fois l'app en ligne |
+| Code | GitHub `theoucs/trustdesk` (privé) | ✅ |
+| App | Vercel, projet `trustdesk` (équipe theo-bodarts-projects), lié au repo : chaque push sur `main` redéploie. Fonctions à Paris (`cdg1`, `vercel.json`) | ✅ |
+| Clés API | Variables d'environnement Vercel `MISTRAL_API_KEY`, `GEMINI_API_KEY`, type *Sensitive*, Production + Preview. Transmises de `.env.local` à la CLI par un pipe, jamais affichées | ✅ |
+| Domaine | `trustdesk.tblabs.dev` : CNAME Cloudflare créé via Domain Connect, certificat SSL Vercel | ✅ |
+| Vitrine | tblabs.dev/work/trustdesk (Cloudflare Pages, push sur `main`) | ✅ |
 
 Protection du quota : 30 questions / 10 min par IP, 500 / jour (`DAILY_ANSWER_LIMIT`), 20 questions max par questionnaire.
 
