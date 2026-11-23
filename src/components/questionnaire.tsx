@@ -17,9 +17,10 @@ const plainText = (md: string) =>
     .replace(/^\|?\s*-{3,}.*$/gm, "")
     .replace(/\|/g, "  ");
 
+// Gemini first: since November 2026, Mistral's free tier allows 2 requests per minute, too few for a questionnaire.
 const MODELS = [
-  { value: "mistral", label: "Mistral · Ministral 14B" },
   { value: "gemini", label: "Google · Gemini 3.5 Flash-Lite" },
+  { value: "mistral", label: "Mistral · Ministral 14B (2 per minute on the free tier)" },
 ] as const;
 
 type Row = {
@@ -32,7 +33,7 @@ type Row = {
 
 export function Questionnaire() {
   const [input, setInput] = useState("");
-  const [generator, setGenerator] = useState<"mistral" | "gemini">("mistral");
+  const [generator, setGenerator] = useState<"mistral" | "gemini">("gemini");
   const [rows, setRows] = useState<Row[]>([]);
   const [running, setRunning] = useState(false);
   const [notice, setNotice] = useState<{
@@ -53,27 +54,33 @@ export function Questionnaire() {
     cancelled.current = false;
     setRunning(true);
     setRows(qs.map((question) => ({ question, state: "queued" })));
-    // Sequential on purpose: free-tier model APIs are rate-limited, and rows fill in one by one.
-    for (let i = 0; i < qs.length && !cancelled.current; i++) {
-      setRows((r) => r.map((row, j) => (j === i ? { ...row, state: "running" } : row)));
-      try {
-        const res = await fetch("/api/answer", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ question: qs[i], generator }),
-        });
-        const data = await res.json();
-        if (!res.ok) {
-          setRows((r) => r.map((row, j) => (j === i ? { ...row, state: "error", error: data.error } : row)));
-          // Our own rate limit: no point sending the remaining questions now.
-          if (res.status === 429) break;
-          continue;
+    // Two questions at a time: fast enough on a slow free tier, gentle enough on its rate limits. Rows fill in as
+    // answers arrive. A 429 from our own rate limiter stops the remaining questions.
+    let next = 0;
+    let stop = false;
+    const worker = async () => {
+      while (!stop && !cancelled.current && next < qs.length) {
+        const i = next++;
+        setRows((r) => r.map((row, j) => (j === i ? { ...row, state: "running" } : row)));
+        try {
+          const res = await fetch("/api/answer", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ question: qs[i], generator }),
+          });
+          const data = await res.json();
+          if (!res.ok) {
+            setRows((r) => r.map((row, j) => (j === i ? { ...row, state: "error", error: data.error } : row)));
+            if (res.status === 429) stop = true;
+            continue;
+          }
+          setRows((r) => r.map((row, j) => (j === i ? { ...row, state: "done", answer: data } : row)));
+        } catch {
+          setRows((r) => r.map((row, j) => (j === i ? { ...row, state: "error", error: "Network error" } : row)));
         }
-        setRows((r) => r.map((row, j) => (j === i ? { ...row, state: "done", answer: data } : row)));
-      } catch {
-        setRows((r) => r.map((row, j) => (j === i ? { ...row, state: "error", error: "Network error" } : row)));
       }
-    }
+    };
+    await Promise.all([worker(), worker()]);
     setRunning(false);
   }
 
@@ -227,7 +234,7 @@ export function Questionnaire() {
               disabled={running || questions.length === 0}
               className="rounded bg-accent px-3.5 py-1.5 text-[13px] font-medium text-white hover:bg-accent-hover disabled:opacity-50"
             >
-              {running ? `Drafting ${done + 1} of ${rows.length}…` : "Draft answers"}
+              {running ? `Drafting… ${done} of ${rows.length} done` : "Draft answers"}
             </button>
           </div>
         </div>

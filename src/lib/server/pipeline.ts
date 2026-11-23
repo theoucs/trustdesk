@@ -1,14 +1,14 @@
 import "server-only";
 import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
-import { chatClient, embeddingClient, type Provider } from "../llm";
+import { chatClient, embeddingClient, LLMError, type Provider } from "../llm";
 import { setRetryPolicy } from "../llm/http";
 import { answerQuestion, DEFAULT_ANSWER_CONFIG, type Answer } from "../rag/answer";
 import { createRetriever, DEFAULT_RETRIEVAL, type Retriever } from "../rag/retrieve";
 
-// A visitor must never wait on a provider: one short retry, and anything asking for a longer wait (a daily quota
-// reset can be 17 hours away) goes straight to the fallbacks below.
-setRetryPolicy({ maxRetries: 1, maxWaitMs: 4000 });
+// A visitor must never be stuck: per-minute limits clear in seconds and are worth a short wait, but anything asking
+// for a longer wait (a daily quota reset can be 17 hours away) goes straight to the fallbacks below.
+setRetryPolicy({ maxRetries: 2, maxWaitMs: 12000 });
 
 export type Draft = Answer & {
   /** live: the requested model answered. fallback-model: the other model did. saved: precomputed answer. */
@@ -62,15 +62,19 @@ export async function draftAnswer(question: string, generator: Provider): Promis
   const keywordNote = () => (degraded ? " Keyword search was used because semantic search is unavailable." : "");
 
   const order: Provider[] = generator === "mistral" ? ["mistral", "gemini"] : ["gemini", "mistral"];
+  let firstError: unknown;
   for (const [i, provider] of order.entries()) {
     try {
       const answer = await answerQuestion(question, { retriever, llm: chatClient(provider) }, DEFAULT_ANSWER_CONFIG);
       const fallback = i > 0;
-      const notice =
-        (fallback ? `Drafted by ${NAMES[provider]}: ${NAMES[generator]} is not available right now.` : "") +
-        keywordNote();
+      const why =
+        firstError instanceof LLMError && firstError.status === 429
+          ? `${NAMES[generator]} reached its free tier limit.`
+          : `${NAMES[generator]} is not available right now.`;
+      const notice = (fallback ? `Drafted by ${NAMES[provider]}: ${why}` : "") + keywordNote();
       return { ...answer, source: fallback ? "fallback-model" : "live", notice: notice.trim() || undefined };
     } catch (err) {
+      firstError ??= err;
       console.warn(`[answer] ${provider} unavailable:`, String(err).slice(0, 200));
     }
   }

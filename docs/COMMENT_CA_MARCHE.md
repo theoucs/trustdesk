@@ -238,6 +238,7 @@ Découvertes faites en testant (bons sujets d'entretien, ce sont de vrais probl�
 - **Les noms de version ne sont pas une garantie** : en demandant `gemini-3.5-flash`, l'API a répondu avec `gemini-3.6-flash`. Chaque run enregistre donc le modèle **réellement servi** (`served` dans `config.json`), pas seulement celui demandé.
 - **Latence très variable sur le gratuit** : Gemini Flash-Lite répond entre 0,8 s et 10 s pour la même taille de requête (file d'attente partagée). Ministral 14B : ~1 s stable. À prendre en compte pour une démo publique.
 - **La sortie structurée garantit la forme, pas la fin du JSON.** En juge, Ministral 14B a produit deux pannes : un raisonnement trop long coupé par la limite de tokens, et une **boucle dégénérée** (un guillemet ouvert, puis des tabulations jusqu'à la limite). Correctif : nouvel essai avec plus de tokens, puis avec une température un peu plus haute (0,4), qui suffit à sortir de la boucle. On n'a **pas** modifié la consigne du juge pour autant : changer l'instrument de mesure en cours de route aurait rendu les runs incomparables.
+- **Une offre gratuite peut changer sans prévenir.** En novembre 2026, Mistral est passé de 30 à 2 requêtes par minute sur les Ministral. Le plan B (§8.1) a absorbé le choc : les réponses arrivaient, signées Gemini. Correctif : Gemini par défaut, 2 questions traitées en parallèle, et un message qui dit pourquoi (« reached its free tier limit »).
 - **Gouvernance des données** : sur les offres gratuites, les fournisseurs peuvent utiliser les requêtes pour améliorer leurs modèles. Acceptable ici (données fictives), **inacceptable** pour la vraie documentation d'un client — en production : offre payante avec engagement de non-entraînement, ou modèle auto-hébergé (les poids Ministral sont ouverts).
 
 ### 6.3 Le prompt et la sortie structurée — `src/lib/rag/answer.ts`
@@ -364,7 +365,7 @@ Méthode : lire les réponses les moins bien notées du run v1, classer les erre
 
 Le v3 récupère l'Australie, mais les deux modèles retombent dans le piège q44 (MTTR → délais de première réponse). Un modèle de 14 milliards de paramètres a du mal à tenir **deux règles en tension** dans le même prompt (« réponds non quand la doc exclut » / « ne réponds pas quand la doc parle d'autre chose »).
 
-**Résultat final de la v2, avec le juge de référence (Gemini, cf. §7.6)** : Mistral 95,0, Gemini 95,1, aucune réponse inventée pour l'un comme pour l'autre ; « non documenté » à tort : 2 questions sur 38 pour Mistral, 1 pour Gemini. Les deux modèles sont à égalité sur ce cas d'usage : le choix de Mistral par défaut dans l'app tient à sa latence (~1 s, stable, contre 1 à 10 s pour Gemini gratuit), pas à la qualité.
+**Résultat final de la v2, avec le juge de référence (Gemini, cf. §7.6)** : Mistral 95,0, Gemini 95,1, aucune réponse inventée pour l'un comme pour l'autre ; « non documenté » à tort : 2 questions sur 38 pour Mistral, 1 pour Gemini. Les deux modèles sont à égalité sur ce cas d'usage. L'app utilise **Gemini par défaut** depuis novembre 2026 : l'offre gratuite de Mistral est passée de 30 à **2 requêtes par minute** (`x-ratelimit-limit-req-minute: 2`), trop peu pour un questionnaire. Mistral reste au choix, et le plan B bascule sur Gemini quand il est à sa limite.
 
 **Décision : prompt v2 en production**, alors que le v3 a le meilleur score du juge pour Mistral. C'est le seul réglage où **aucun des deux modèles n'invente de réponse**. Une fausse abstention coûte une relecture humaine (et l'app affiche les sections consultées pour la faciliter) ; une fausse affirmation peut finir dans un contrat. **On optimise pour l'erreur qui coûte cher, pas pour le score global.** C'est sans doute le message le plus important du projet pour un entretien.
 
@@ -449,7 +450,7 @@ Testé en lançant l'app avec de fausses clés. Et pour que les évaluations ne 
 4. **Onglet Quality** (1 min) : le tableau des versions de prompt → « v3 avait le meilleur score, j'ai déployé v2 parce que c'est la seule qui n'invente rien ». Puis la matrice : « le juge pèse 8 points, le modèle 1 point ».
 5. Conclure sur ce qu'il faudrait pour passer en production (réponse prête au §11).
 
-**Précautions** : faire la démo avec **Mistral** (latence ~1 s, stable) ; Gemini gratuit varie de 1 à 10 s. Ne pas lancer d'évaluation complète le jour d'un entretien : elle consomme presque tout le quota quotidien gratuit de Gemini (500 requêtes/jour par modèle).
+**Précautions** : faire la démo avec **Gemini** (le choix par défaut). L'app traite 2 questions à la fois : le questionnaire exemple de 15 questions prend moins d'une minute. Mistral gratuit est limité à 2 requêtes par minute depuis novembre 2026. Ne pas lancer d'évaluation complète le jour d'un entretien : elle consomme presque tout le quota quotidien gratuit de Gemini (500 requêtes/jour par modèle).
 
 ## 10. Déploiement
 
